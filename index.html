@@ -35,7 +35,7 @@
         <section id="main_content">
             <div>
               <h3>
-                http://ienaga.github.io/swf2js/?your_swf_pathでデモが見れます。<br />
+                http://ienaga.github.io/swf2js/?your_swf_path&width&heightでデモが見れます。<br />
                 XMLHttpRequestでデータを取得するので、テストする方はクロスドメイン通信の許可をお願いします。<br />
               </h3>
                 
@@ -43,27 +43,29 @@
                 <code>
                   .htaccess
                   Header append Access-Control-Allow-Origin: *
+                  
+                  php
+                  header('Access-Control-Allow-Origin: *');
                 </code>
-              </pre>
-              
-              <pre>
-                <code>php</code>
-                <code>header('Access-Control-Allow-Origin: *');</code>
               </pre>
             </div>
         </section>
+        
+        <section>
+          <div id="swf2js"></div>
+          <script type="text/javascript">
+              var str = location.search.substr(1);
+              var params = str.split('&');
+              var path = params[0];
+              var width = params[1];
+              var height = params[2];
+              swf2js.load(path, width, height);
+              swf2js.play();
+          </script>
+        </section>
       </div>
       
-      <div id="swf2js"></div>
-      <script type="text/javascript">
-          var str = location.search.substr(1);
-          var params = str.split('&');
-          var path = params[0];
-          var width = params[1];
-          var height = params[2];
-          swf2js.load(path, width, height);
-          swf2js.play();
-      </script>
+
             
       <div class="inner">
         <footer>
