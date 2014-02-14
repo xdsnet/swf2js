@@ -38,13 +38,8 @@
                 XMLHttpRequestでデータを取得するので、テストする方はクロスドメイン通信の許可をお願いします。<br />
                 <br />
                 
-                <code>
-                  .htaccess
-                  <pre>
-                    Header append Access-Control-Allow-Origin: *
-                  </pre>
-                </code>
-                
+                <code>.htaccess</code>
+                <code>Header append Access-Control-Allow-Origin: *</code>
                 <pre>
                   <code>php</code>
                   <code>header('Access-Control-Allow-Origin: *');</code>
