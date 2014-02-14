@@ -34,15 +34,20 @@
 
         <section id="main_content">
             <div>
-              http://ienaga.github.io/swf2js/?your_swf_path&width&heightでデモが見れます。<br />
-              XMLHttpRequestでデータを取得するので、テストする方はクロスドメイン通信の許可をお願いします。<br />
-                
+              <code>http://ienaga.github.io/swf2js/?your_swf_path&width&height</code>
+              でデモが見れます。<br />
+              <br />
+              
+              XMLHttpRequestでデータを取得するので<br />
+              テストする方はクロスドメイン通信の許可をお願いします。<br />
               <code>
+                <pre>
                 .htaccess<br />
                 Header append Access-Control-Allow-Origin: *<br />
                 <br />
                 php<br />
                 header('Access-Control-Allow-Origin: *');
+                </pre>
               </code>
             </div>
         </section>
