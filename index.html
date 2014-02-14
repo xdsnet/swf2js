@@ -37,11 +37,16 @@
                 http://ienaga.github.io/swf2js/?your_swf_pathでデモが見れます。<br />
                 XMLHttpRequestでデータを取得するので、テストする方はクロスドメイン通信の許可をお願いします。<br />
                 <br />
-                .htaccess<br />
+                
+                <code>
+                  .htaccess<br />
                   Header append Access-Control-Allow-Origin: *<br />
-                <br />
-                php<br />
+                </code>
+                
+                <pre>
+                  php<br />
                   header('Access-Control-Allow-Origin: *');<br />
+                </pre>
             </div>
         </section>
       </div>
