@@ -40,30 +40,33 @@
               
               XMLHttpRequestでデータを取得するので<br />
               テストする方はクロスドメイン通信の許可をお願いします。<br />
-              <code>
+              
               <blockquote>
-                .htaccess<br />
-                Header append Access-Control-Allow-Origin: *<br />
-                php<br />
-                header('Access-Control-Allow-Origin: *');
+                <code>
+                  .htaccess<br />
+                  Header append Access-Control-Allow-Origin: *<br />
+                  php<br />
+                  header('Access-Control-Allow-Origin: *');
+                </code>
               </blockquote>
-              </code>
             </div>
         </section>
         
         <hr>
         
         <section>
-          <div id="swf2js"></div>
-          <script type="text/javascript">
-              var str = location.search.substr(1);
-              var params = str.split('&');
-              var path = params[0];
-              var width = params[1];
-              var height = params[2];
-              swf2js.load(path, width, height);
-              swf2js.play();
-          </script>
+          <div>
+            <div id="swf2js"></div>
+            <script type="text/javascript">
+                var str = location.search.substr(1);
+                var params = str.split('&');
+                var path = params[0];
+                var width = params[1];
+                var height = params[2];
+                swf2js.load(path, width, height);
+                swf2js.play();
+            </script>
+          </div>
         </section>
         
         <footer>
