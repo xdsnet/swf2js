@@ -48,8 +48,12 @@
       
       <div id="swf2js"></div>
       <script type="text/javascript">
-      var path = location.search.substr(1).split('&')[0];
-          swf2js.load(path, 240, 240);
+          var str = location.search.substr(1);
+          var params = str.split('&');
+          var path = params[0];
+          var width = params[1];
+          var height = params[2];
+          swf2js.load(path, width, height);
           swf2js.play();
       </script>
             
