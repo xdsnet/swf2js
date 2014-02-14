@@ -11,7 +11,6 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="./javascripts/swf2js.js"></script>
     <title>swf2js</title>
   </head>
 
@@ -34,36 +33,20 @@
 
         <section id="main_content">
           <div>
-            <code>http://ienaga.github.io/swf2js/?your_swf_path&width&height</code><br />
+            <code>http://ienaga.github.io/swf2js/sample.html?your_swf_path&width&height</code><br />
             でデモが見れます。<br />
           </div>
           
           <hr>
           
-          <div>[DEMO]</div>
-          <div id="swf2js"></div>
-          <script type="text/javascript">
-              var str = location.search.substr(1);
-              var params = str.split('&');
-              var path = params[0];
-              var width = params[1];
-              var height = params[2];
-              
-              if (!path) {
-                path = 'sample/mobile_uranai.swf';
-              }
-              
-              if (width) {
-                width = 240;
-              }
-              
-              if (!height) {
-                height = 240;
-              }
-              
-              swf2js.load(path, width, height);
-              swf2js.play();
-          </script>
+          <div>[DEMOS]</div>
+          <div>
+            <ul>
+              <li>
+                <a href="http://ienaga.github.io/swf2js/sample.html?sample/mobile_uranai.swf">占い</a>
+              </li>
+            </ul>
+          </div>
           
           <hr>
           
