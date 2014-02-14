@@ -42,11 +42,13 @@
               テストする方はクロスドメイン通信の許可をお願いします。<br />
               <pre>
               <blockquote>
+                <code>
                 .htaccess<br />
                 Header append Access-Control-Allow-Origin: *<br />
                 <br />
                 php<br />
                 header('Access-Control-Allow-Origin: *');
+                </code>
               </blockquote>
               </pre>
             </div>
