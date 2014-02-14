@@ -48,6 +48,19 @@
               var path = params[0];
               var width = params[1];
               var height = params[2];
+              
+              if (!path) {
+                path = 'sample/mobile_uranai.swf';
+              }
+              
+              if (width) {
+                width = 240;
+              }
+              
+              if (!height) {
+                height = 240;
+              }
+              
               swf2js.load(path, width, height);
               swf2js.play();
           </script>
