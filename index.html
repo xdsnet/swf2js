@@ -34,7 +34,14 @@
 
         <section id="main_content">
             <div>
-                http://ienaga.github.io/swf2js/?your_swf_pathでデモが見れます。
+                http://ienaga.github.io/swf2js/?your_swf_pathでデモが見れます。<br />
+                XMLHttpRequestでデータを取得するので、テストする方はクロスドメイン通信の許可をお願いします。<br />
+                <br />
+                .htaccess<br />
+                  Header append Access-Control-Allow-Origin: *<br />
+                <br />
+                php<br />
+                  header('Access-Control-Allow-Origin: *');<br />
             </div>
         </section>
       </div>
