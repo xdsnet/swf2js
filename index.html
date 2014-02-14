@@ -10,7 +10,8 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>swf2js by ienaga</title>
+    <script type="text/javascript" src="./javascripts/swf2js.js"></script>
+    <title>swf2js</title>
   </head>
 
   <body>
@@ -31,9 +32,11 @@
         <hr>
 
         <section id="main_content">
-          <div></div>
-
-
+            <div id="swf2js"></div>
+            <script type="text/javascript">
+                swf2js.load();
+                swf2js.play();
+            </script>
         </section>
 
         <footer>
