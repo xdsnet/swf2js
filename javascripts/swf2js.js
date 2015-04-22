@@ -8573,6 +8573,7 @@
                 _this.isClipDepth = false;
                 _this.clipDepth = 0;
                 ctx.restore();
+                ctx.beginPath();
             }
 
             // mask 開始
@@ -8673,6 +8674,7 @@
             _this.isClipDepth = false;
             _this.clipDepth = 0;
             ctx.restore();
+            ctx.beginPath();
         }
 
         _this._nextFrame = 0;
@@ -8744,15 +8746,7 @@
             }
 
             // 実行
-            if (tag.isClipDepth) {
-                cache.beginPath();
-            }
             cache = _executeRenderShape.call(_this, cache, matrix, colorTransform, char.data, tag.isClipDepth);
-
-            // mask
-            if (tag.isClipDepth) {
-                cache.clip();
-            }
 
             // cache
             if (!tag.isClipDepth && isCache) {
@@ -8760,8 +8754,6 @@
             } else {
                 cache = null;
             }
-
-            ctx.globalAlpha = 1;
         }
 
         return cache;
@@ -8784,6 +8776,7 @@
         var _generateImageTransform = _this.generateImageTransform;
         var _transform = ctx.transform;
         var _drawImage = ctx.drawImage;
+
         for (var idx = 0; idx < shapeLength; idx++) {
             if (!(idx in shapes)) {
                 continue;
@@ -8970,9 +8963,15 @@
             }
         }
 
+        if (isClipDepth) {
+            ctx.clip();
+        }
+
         var resetCss = 'rgba(0,0,0,1)';
         ctx.strokeStyle = resetCss;
         ctx.fillStyle = resetCss;
+        ctx.globalAlpha = 1;
+
         return ctx;
     };
 
