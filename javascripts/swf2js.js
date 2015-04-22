@@ -8967,6 +8967,9 @@
             }
         }
 
+        var resetCss = 'rgba(0,0,0,1)';
+        ctx.strokeStyle = resetCss;
+        ctx.fillStyle = resetCss;
         return ctx;
     };
 
