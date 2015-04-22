@@ -8744,7 +8744,6 @@
             }
 
             // 実行
-            cache.beginPath();
             cache = _executeRenderShape.call(_this, cache, matrix, colorTransform, char.data, tag.isClipDepth);
 
             // mask
@@ -8796,6 +8795,7 @@
 
                 var styleObj = styles[sKey];
                 var cmd = styleObj.cmd;
+                ctx.beginPath();
 
                 if (isClipDepth) {
                     cmd(ctx);
@@ -8805,7 +8805,6 @@
                 var styleType = styleObj.styleType;
                 var isStroke = (styleObj.Width != undefined);
 
-                ctx.beginPath();
                 cmd(ctx);
                 switch (styleType) {
                     case 0x00:
