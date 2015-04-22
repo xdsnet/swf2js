@@ -8573,7 +8573,6 @@
                 _this.isClipDepth = false;
                 _this.clipDepth = 0;
                 ctx.restore();
-                ctx.beginPath();
             }
 
             // mask 開始
@@ -8674,7 +8673,6 @@
             _this.isClipDepth = false;
             _this.clipDepth = 0;
             ctx.restore();
-            ctx.beginPath();
         }
 
         _this._nextFrame = 0;
@@ -8965,6 +8963,7 @@
 
         if (isClipDepth) {
             ctx.clip();
+            ctx.beginPath();
         }
 
         var resetCss = 'rgba(0,0,0,1)';
