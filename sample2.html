@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0" />
+<script type="text/javascript" src="./javascripts/swf2js.js"></script>
+<title>swf2js sample</title>
+</head>
+<body style="margin: 0; padding:0; background-color: #000000;">
+    <div id="swf_1" style="width: 320px; height: 320px;"></div>
+    <div id="swf_2" style="width: 320px; height: 320px;"></div>
+    
+    <script type="text/javascript">
+        swf2js.load('sample/analog20.swf', {tagId: "swf_1"});
+        swf2js.load('sample/mogura.swf', {tagId: "swf_2"});
+    </script>
+</body>
+</html>
