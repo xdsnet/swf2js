@@ -7763,14 +7763,13 @@ if (window['swf2js'] == undefined) { (function(window)
         var matrix = _this.getMatrix();
         for (;;) {
             var parent = mc.getParent();
-            if (!parent || parent.characterId == 0)
+            if (!parent.getParent())
                 break;
-            matrix = parent.multiplicationMatrix(parent.getMatrix(),matrix);
+            matrix = parent.multiplicationMatrix(parent.getMatrix(), matrix);
             mc = parent;
         }
 
         var bounds = _this.boundsMatrix(_this._getBounds(), matrix);
-
         var xMax = bounds.xMax/20;
         var xMin = bounds.xMin/20;
         var yMax = bounds.yMax/20;
