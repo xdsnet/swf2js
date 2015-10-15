@@ -1,14 +1,17 @@
+/*jshint bitwise: false*/
 /**
- * swf2js (version 0.5.8)
+ * swf2js (version 0.5.10)
  * Develop: https://github.com/ienaga/swf2js
  * ReadMe: https://github.com/ienaga/swf2js/blob/master/README.md
  * Web: https://swf2js.wordpress.com
  * Contact: ienaga@tvon.jp
  * Copyright (c) 2013 Toshiyuki Ienaga. Licensed under the MIT License.
  */
-if (!('swf2js' in window)){(function(window)
+if (!("swf2js" in window)){(function(window)
 {
+    "use strict";
     var _document = window.document;
+    var isBtoa = ("btoa" in window);
     var _Math = Math;
     var _min = _Math.min;
     var _max = _Math.max;
@@ -26,6 +29,7 @@ if (!('swf2js' in window)){(function(window)
     var _PI = _Math.PI;
     var _Number = Number;
     var _fromCharCode = String.fromCharCode;
+    var Func = Function;
     var _parseInt = parseInt;
     var _parseFloat = parseFloat;
     var _isNaN = isNaN;
@@ -34,12 +38,11 @@ if (!('swf2js' in window)){(function(window)
     var _clearTimeout = clearTimeout;
     var _setInterval = setInterval;
     var _clearInterval = clearInterval;
-    var _Date = Date;
     var _escape = escape;
     var _unescape = unescape;
     var _decodeURIComponent = decodeURIComponent;
     var isWebGL = (window.WebGLRenderingContext &&
-        _document.createElement('canvas').getContext('webgl')) ? true : false;
+        _document.createElement("canvas").getContext("webgl")) ? true : false;
     var requestAnimationFrame =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
@@ -52,35 +55,35 @@ if (!('swf2js' in window)){(function(window)
     var asId = 0;
     var instanceId = 0;
     var tmpContext;
-    var StartDate = new _Date();
+    var StartDate = new Date();
     var _navigator = window.navigator;
     var ua = _navigator.userAgent;
-    var isAndroid = (ua.indexOf('Android') > 0);
-    var isAndroid4x =(ua.indexOf('Android 4.') > 0);
-    var isiOS = (ua.indexOf('iPhone') > 0 || ua.indexOf('iPod') > 0);
-    var isChrome = (ua.indexOf('Chrome') > 0);
+    var isAndroid = (ua.indexOf("Android") > 0);
+    var isAndroid4x =(ua.indexOf("Android 4.") > 0);
+    var isiOS = (ua.indexOf("iPhone") > 0 || ua.indexOf("iPod") > 0);
+    var isChrome = (ua.indexOf("Chrome") > 0);
     var isTouch = (isAndroid || isiOS);
     var xmlHttpRequest = new XMLHttpRequest();
-    var isXHR2 = typeof xmlHttpRequest.responseType != 'undefined';
+    var isXHR2 = (typeof xmlHttpRequest.responseType !== "undefined");
     var isArrayBuffer = window.ArrayBuffer;
     var devicePixelRatio = window.devicePixelRatio || 1;
     var _devicePixelRatio = devicePixelRatio * 0.75;
     var _event = null;
-    var startEvent = 'mousedown';
-    var moveEvent  = 'mousemove';
-    var endEvent   = 'mouseup';
+    var startEvent = "mousedown";
+    var moveEvent  = "mousemove";
+    var endEvent   = "mouseup";
     if (isTouch) {
-        startEvent = 'touchstart';
-        moveEvent  = 'touchmove';
-        endEvent   = 'touchend';
+        startEvent = "touchstart";
+        moveEvent  = "touchmove";
+        endEvent   = "touchend";
     }
 
     // Alpha Bug
     var isAlphaBug = isAndroid;
-    var chkCanvas = _document.createElement('canvas');
+    var chkCanvas = _document.createElement("canvas");
     chkCanvas.width = 1;
     chkCanvas.height = 1;
-    tmpContext = chkCanvas.getContext('2d');
+    tmpContext = chkCanvas.getContext("2d");
     if (isAndroid) {
         var imageData = tmpContext.createImageData(1, 1);
         var pixelArray = imageData.data;
@@ -89,13 +92,13 @@ if (!('swf2js' in window)){(function(window)
         tmpContext.putImageData(imageData, 0, 0);
         imageData = tmpContext.getImageData(0, 0, 1, 1);
         pixelArray = imageData.data;
-        isAlphaBug = (pixelArray[0] == 255);
+        isAlphaBug = (pixelArray[0] === 255);
         imageData = null;
         pixelArray = null;
     }
 
     // shift-jis
-    var JCT11280 = new Function('var a="zKV33~jZ4zN=~ji36XazM93y!{~k2y!o~k0ZlW6zN?3Wz3W?{EKzK[33[`y|;-~j^YOTz$!~kNy|L1$353~jV3zKk3~k-4P4zK_2+~jY4y!xYHR~jlz$_~jk4z$e3X5He<0y!wy|X3[:~l|VU[F3VZ056Hy!nz/m1XD61+1XY1E1=1y|bzKiz!H034zKj~mEz#c5ZA3-3X$1~mBz$$3~lyz#,4YN5~mEz#{ZKZ3V%7Y}!J3X-YEX_J(3~mAz =V;kE0/y|F3y!}~m>z/U~mI~j_2+~mA~jp2;~m@~k32;~m>V}2u~mEX#2x~mBy+x2242(~mBy,;2242(~may->2&XkG2;~mIy-_2&NXd2;~mGz,{4<6:.:B*B:XC4>6:.>B*BBXSA+A:X]E&E<~r#z+625z s2+zN=`HXI@YMXIAXZYUM8X4K/:Q!Z&33 3YWX[~mB`{zKt4z (zV/z 3zRw2%Wd39]S11z$PAXH5Xb;ZQWU1ZgWP%3~o@{Dgl#gd}T){Uo{y5_d{e@}C(} WU9|cB{w}bzvV|)[} H|zT}d||0~{]Q|(l{|x{iv{dw}(5}[Z|kuZ }cq{{y|ij}.I{idbof%cu^d}Rj^y|-M{ESYGYfYsZslS`?ZdYO__gLYRZ&fvb4oKfhSf^d<Yeasc1f&a=hnYG{QY{D`Bsa|u,}Dl|_Q{C%xK|Aq}C>|c#ryW=}eY{L+`)][YF_Ub^h4}[X|?r|u_ex}TL@YR]j{SrXgo*|Gv|rK}B#mu{R1}hs|dP{C7|^Qt3|@P{YVV |8&}#D}ef{e/{Rl|>Hni}R1{Z#{D[}CQlQ||E}[s{SG_+i8eplY[=[|ec[$YXn#`hcm}YR|{Ci(_[ql|?8p3]-}^t{wy}4la&pc|3e{Rp{LqiJ],] `kc(]@chYnrM`O^,ZLYhZB]ywyfGY~aex!_Qww{a!|)*lHrM{N+n&YYj~Z b c#e_[hZSon|rOt`}hBXa^i{lh|<0||r{KJ{kni)|x,|0auY{D!^Sce{w;|@S|cA}Xn{C1h${E]Z-XgZ*XPbp]^_qbH^e[`YM|a||+=]!Lc}]vdBc=j-YSZD]YmyYLYKZ9Z>Xcczc2{Yh}9Fc#Z.l{}(D{G{{mRhC|L3b#|xK[Bepj#ut`H[,{E9Yr}1b{[e]{ZFk7[ZYbZ0XL]}Ye[(`d}c!|*y`Dg=b;gR]Hm=hJho}R-[n}9;{N![7k_{UbmN]rf#pTe[x8}!Qcs_rs[m`|>N}^V})7{^r|/E}),}HH{OYe2{Skx)e<_.cj.cjoMhc^d}0uYZd!^J_@g,[[[?{i@][|3S}Yl3|!1|eZ|5IYw|1D}e7|Cv{OHbnx-`wvb[6[4} =g+k:{C:}ed{S]|2M]-}WZ|/q{LF|dYu^}Gs^c{Z=}h>|/i|{W]:|ip{N:|zt|S<{DH[p_tvD{N<[8Axo{X4a.^o^X>Yfa59`#ZBYgY~_t^9`jZHZn`>G[oajZ;X,i)Z.^~YJe ZiZF^{][[#Zt^|]Fjx]&_5dddW]P0C[-]}]d|y {C_jUql] |OpaA[Z{lp|rz}:Mu#]_Yf6{Ep?f5`$[6^D][^u[$[6^.Z8]]ePc2U/=]K^_+^M{q*|9tYuZ,s(dS{i=|bNbB{uG}0jZOa:[-]dYtu3]:]<{DJ_SZIqr_`l=Yt`gkTnXb3d@kiq0a`Z{|!B|}e}Ww{Sp,^Z|0>_Z}36|]A|-t}lt{R6pi|v8hPu#{C>YOZHYmg/Z4nicK[}hF_Bg|YRZ7c|crkzYZY}_iXcZ.|)U|L5{R~qi^Uga@Y[xb}&qdbd6h5|Btw[}c<{Ds53[Y7]?Z<|e0{L[ZK]mXKZ#Z2^tavf0`PE[OSOaP`4gi`qjdYMgys/?[nc,}EEb,eL]g[n{E_b/vcvgb.{kcwi`~v%|0:|iK{Jh_vf5lb}KL|(oi=LrzhhY_^@`zgf[~g)[J_0fk_V{T)}I_{D&_/d9W/|MU[)f$xW}?$xr4<{Lb{y4}&u{XJ|cm{Iu{jQ}CMkD{CX|7A}G~{kt)nB|d5|<-}WJ}@||d@|Iy}Ts|iL|/^|no|0;}L6{Pm]7}$zf:|r2}?C_k{R(}-w|`G{Gy[g]bVje=_0|PT{^Y^yjtT[[[l!Ye_`ZN]@[n_)j3nEgMa]YtYpZy].d-Y_cjb~Y~[nc~sCi3|zg}B0}do{O^{|$`_|D{}U&|0+{J3|8*]iayx{a{xJ_9|,c{Ee]QXlYb]$[%YMc*]w[aafe]aVYi[fZEii[xq2YQZHg]Y~h#|Y:thre^@^|_F^CbTbG_1^qf7{L-`VFx Zr|@EZ;gkZ@slgko`[e}T:{Cu^pddZ_`yav^Ea+[#ZBbSbO`elQfLui}.F|txYcbQ`XehcGe~fc^RlV{D_0ZAej[l&jShxG[ipB_=u:eU}3e8[=j|{D(}dO{Do[BYUZ0/]AYE]ALYhZcYlYP/^-^{Yt_1_-;YT`P4BZG=IOZ&]H[e]YYd[9^F[1YdZxZ?Z{Z<]Ba2[5Yb[0Z4l?]d_;_)a?YGEYiYv`_XmZs4ZjY^Zb]6gqGaX^9Y}dXZr[g|]Y}K aFZp^k^F]M`^{O1Ys]ZCgCv4|E>}8eb7}l`{L5[Z_faQ|c2}Fj}hw^#|Ng|B||w2|Sh{v+[G}aB|MY}A{|8o}X~{E8paZ:]i^Njq]new)`-Z>haounWhN}c#{DfZ|fK]KqGZ=:u|fqoqcv}2ssm}.r{]{nIfV{JW)[K|,Z{Uxc|]l_KdCb%]cfobya3`p}G^|LZiSC]U|(X|kBlVg[kNo({O:g:|-N|qT}9?{MBiL}Sq{`P|3a|u.{Uaq:{_o|^S}jX{Fob0`;|#y_@[V[K|cw[<_ }KU|0F}d3|et{Q7{LuZttsmf^kYZ`Af`}$x}U`|Ww}d]| >}K,r&|XI|*e{C/a-bmr1fId4[;b>tQ_:]hk{b-pMge]gfpo.|(w[jgV{EC1Z,YhaY^q,_G[c_g[J0YX]`[h^hYK^_Yib,` {i6vf@YM^hdOKZZn(jgZ>bzSDc^Z%[[o9[2=/YHZ(_/Gu_`*|8z{DUZxYt^vuvZjhi^lc&gUd4|<UiA`z]$b/Z?l}YI^jaHxe|;F}l${sQ}5g}hA|e4}?o{ih}Uz{C)jPe4]H^J[Eg[|AMZMlc}:,{iz}#*|gc{Iq|/:|zK{l&}#u|myd{{M&v~nV};L|(g|I]ogddb0xsd7^V})$uQ{HzazsgxtsO^l}F>ZB]r|{7{j@cU^{{CbiYoHlng]f+nQ[bkTn/}<-d9q {KXadZYo+n|l[|lc}V2{[a{S4Zam~Za^`{HH{xx_SvF|ak=c^[v^7_rYT`ld@]:_ub%[$[m](Shu}G2{E.ZU_L_R{tz`vj(f?^}hswz}GdZ}{S:h`aD|?W|`dgG|if{a8|J1{N,}-Ao3{H#{mfsP|[ bzn+}_Q{MT{u4kHcj_q`eZj[8o0jy{p7}C|[}l){MuYY{|Ff!Ykn3{rT|m,^R|,R}$~Ykgx{P!]>iXh6[l[/}Jgcg{JYZ.^qYfYIZl[gZ#Xj[Pc7YyZD^+Yt;4;`e8YyZVbQ7YzZxXja.7SYl[s]2^/Ha$[6ZGYrb%XiYdf2]H]kZkZ*ZQ[ZYS^HZXcCc%Z|[(bVZ]]:OJQ_DZCg<[,]%Zaa [g{C00HY[c%[ChyZ,Z_`PbXa+eh`^&jPi0a[ggvhlekL]w{Yp^v}[e{~;k%a&k^|nR_z_Qng}[E}*Wq:{k^{FJZpXRhmh3^p>de^=_7`|ZbaAZtdhZ?n4ZL]u`9ZNc3g%[6b=e.ZVfC[ZZ^^^hD{E(9c(kyZ=bb|Sq{k`|vmr>izlH[u|e`}49}Y%}FT{[z{Rk}Bz{TCc/lMiAqkf(m$hDc;qooi[}^o:c^|Qm}a_{mrZ(pA`,}<2sY| adf_%|}`}Y5U;}/4|D>|$X{jw{C<|F.hK|*A{MRZ8Zsm?imZm_?brYWZrYx`yVZc3a@f?aK^ojEd {bN}/3ZH]/$YZhm^&j 9|(S|b]mF}UI{q&aM]LcrZ5^.|[j`T_V_Gak}9J[ ZCZD|^h{N9{~&[6Zd{}B}2O|cv]K}3s}Uy|l,fihW{EG`j_QOp~Z$F^zexS`dcISfhZBXP|.vn|_HYQ|)9|cr]<`&Z6]m_(ZhPcSg>`Z]5`~1`0Xcb4k1{O!bz|CN_T{LR|a/gFcD|j<{Z._[f)mPc:1`WtIaT1cgYkZOaVZOYFrEe[}T$}Ch}mk{K-^@]fH{Hdi`c*Z&|Kt{if[C{Q;{xYB`dYIX:ZB[}]*[{{p9|4GYRh2ao{DS|V+[zd$`F[ZXKadb*A] Ys]Maif~a/Z2bmclb8{Jro_rz|x9cHojbZ{GzZx_)]:{wAayeDlx}<=`g{H1{l#}9i|)=|lP{Qq}.({La|!Y{i2EZfp=c*}Cc{EDvVB|;g}2t{W4av^Bn=]ri,|y?|3+}T*ckZ*{Ffr5e%|sB{lx^0]eZb]9[SgAjS_D|uHZx]dive[c.YPkcq/}db{EQh&hQ|eg}G!ljil|BO]X{Qr_GkGl~YiYWu=c3eb}29v3|D|}4i||.{Mv})V{SP1{FX}CZW6{cm|vO{pS|e#}A~|1i}81|Mw}es|5[}3w{C`h9aL]o{}p[G`>i%a1Z@`Ln2bD[$_h`}ZOjhdTrH{[j_:k~kv[Sdu]CtL}41{I |[[{]Zp$]XjxjHt_eThoa#h>sSt8|gK|TVi[Y{t=}Bs|b7Zpr%{gt|Yo{CS[/{iteva|cf^hgn}($_c^wmb^Wm+|55jrbF|{9^ q6{C&c+ZKdJkq_xOYqZYSYXYl`8]-cxZAq/b%b*_Vsa[/Ybjac/OaGZ4fza|a)gY{P?| I|Y |,pi1n7}9bm9ad|=d{aV|2@[(}B`d&|Uz}B}{`q|/H|!JkM{FU|CB|.{}Az}#P|lk}K{|2rk7{^8^?`/|k>|Ka{Sq}Gz}io{DxZh[yK_#}9<{TRdgc]`~Z>JYmYJ]|`!ZKZ]gUcx|^E[rZCd`f9oQ[NcD_$ZlZ;Zr}mX|=!|$6ZPZYtIo%fj}CpcN|B,{VDw~gb}@hZg`Q{LcmA[(bo`<|@$|o1|Ss}9Z_}tC|G`{F/|9nd}i=}V-{L8aaeST]daRbujh^xlpq8|}zs4bj[S`J|]?G{P#{rD{]I`OlH{Hm]VYuSYUbRc*6[j`8]pZ[bt_/^Jc*[<Z?YE|Xb|?_Z^Vcas]h{t9|Uwd)_(=0^6Zb{Nc} E[qZAeX[a]P^|_J>e8`W^j_Y}R{{Jp__]Ee#e:iWb9q_wKbujrbR}CY`,{mJ}gz{Q^{t~N|? gSga`V_||:#mi}3t|/I`X{N*|ct|2g{km}gi|{={jC}F;|E}{ZZjYf*frmu}8Tdroi{T[|+~}HG{cJ}DM{Lp{Ctd&}$hi3|FZ| m}Kr|38}^c|m_|Tr{Qv|36}?Up>|;S{DV{k_as}BK{P}}9p|t`jR{sAm4{D=b4pWa[}Xi{EjwEkI}3S|E?u=X0{jf} S|NM|JC{qo^3cm]-|JUx/{Cj{s>{Crt[UXuv|D~|j|d{YXZR}Aq}0r}(_{pJfi_z}0b|-vi)Z mFe,{f4|q`b{}^Z{HM{rbeHZ|^x_o|XM|L%|uFXm}@C_{{Hhp%a7|0p[Xp+^K}9U{bP}: tT}B|}+$|b2|[^|~h{FAby[`{}xgygrt~h1[li`c4vz|,7p~b(|mviN}^pg[{N/|g3|^0c,gE|f%|7N{q[|tc|TKA{LU}I@|AZp(}G-sz{F |qZ{}F|f-}RGn6{Z]_5})B}UJ{FFb2]4ZI@v=k,]t_Dg5Bj]Z-]L]vrpdvdGlk|gF}G]|IW}Y0[G| /bo|Te^,_B}#n^^{QHYI[?hxg{[`]D^IYRYTb&kJ[cri[g_9]Ud~^_]<p@_e_XdNm-^/|5)|h_{J;{kacVopf!q;asqd}n)|.m|bf{QW|U)}b+{tL|w``N|to{t ZO|T]jF}CB|0Q{e5Zw|k |We}5:{HO{tPwf_uajjBfX}-V_C_{{r~gg|Ude;s+}KNXH}! `K}eW{Upwbk%ogaW}9EYN}YY|&v|SL{C3[5s.]Y]I]u{M6{pYZ`^,`ZbCYR[1mNg>rsk0Ym[jrE]RYiZTr*YJ{Ge|%-lf|y(`=[t}E6{k!|3)}Zk} ][G{E~cF{u3U.rJ|a9p#o#ZE|?|{sYc#vv{E=|LC}cu{N8`/`3`9rt[4|He{cq|iSYxY`}V |(Q|t4{C?]k_Vlvk)BZ^r<{CL}#h}R+[<|i=}X|{KAo]|W<`K{NW|Zx}#;|fe{IMr<|K~tJ_x}AyLZ?{GvbLnRgN}X&{H7|x~}Jm{]-| GpNu0}.ok>|c4{PYisrDZ|fwh9|hfo@{H~XSbO]Odv]%`N]b1Y]]|eIZ}_-ZA]aj,>eFn+j[aQ_+]h[J_m_g]%_wf.`%k1e#Z?{CvYu_B^|gk`Xfh^M3`afGZ-Z|[m{L}|k3cp[it ^>YUi~d>{T*}YJ{Q5{Jxa$hg|%4`}|LAgvb }G}{P=|<;Ux{_skR{cV|-*|s-{Mp|XP|$G|_J}c6cM{_=_D|*9^$ec{V;|4S{qO|w_|.7}d0|/D}e}|0G{Dq]Kdp{}dfDi>}B%{Gd|nl}lf{C-{y}|ANZr}#={T~|-(}c&{pI|ft{lsVP}){|@u}!W|bcmB{d?|iW|:dxj{PSkO|Hl]Li:}VYk@|2={fnWt{M3`cZ6|)}|Xj}BYa?vo{e4|L7|B7{L7|1W|lvYO}W8nJ|$Vih|{T{d*_1|:-n2dblk``fT{Ky|-%}m!|Xy|-a{Pz}[l{kFjz|iH}9N{WE{x,|jz}R {P|{D)c=nX|Kq|si}Ge{sh|[X{RF{t`|jsr*fYf,rK|/9}$}}Nf{y!1|<Std}4Wez{W${Fd_/^O[ooqaw_z[L`Nbv[;l7V[ii3_PeM}.h^viqYjZ*j1}+3{bt{DR[;UG}3Og,rS{JO{qw{d<_zbAh<R[1_r`iZTbv^^a}c{iEgQZ<exZFg.^Rb+`Uj{a+{z<[~r!]`[[|rZYR|?F|qppp]L|-d|}K}YZUM|=Y|ktm*}F]{D;g{uI|7kg^}%?Z%ca{N[_<q4xC]i|PqZC]n}.bDrnh0Wq{tr|OMn6tM|!6|T`{O`|>!]ji+]_bTeU}Tq|ds}n|{Gm{z,f)}&s{DPYJ`%{CGd5v4tvb*hUh~bf]z`jajiFqAii]bfy^U{Or|m+{I)cS|.9k:e3`^|xN}@Dnlis`B|Qo{`W|>||kA}Y}{ERYuYx`%[exd`]|OyiHtb}HofUYbFo![5|+]gD{NIZR|Go}.T{rh^4]S|C9_}xO^i`vfQ}C)bK{TL}cQ|79iu}9a];sj{P.o!f[Y]pM``Jda^Wc9ZarteBZClxtM{LW}l9|a.mU}KX}4@{I+f1}37|8u}9c|v${xGlz}jP{Dd1}e:}31}%3X$|22i<v+r@~mf{sN{C67G97855F4YL5}8f{DT|xy{sO{DXB334@55J1)4.G9A#JDYtXTYM4, YQD9;XbXm9SX]IB^4UN=Xn<5(;(F3YW@XkH-X_VM[DYM:5XP!T&Y`6|,^{IS-*D.H>:LXjYQ0I3XhAF:9:(==.F*3F1189K/7163D,:@|e2{LS36D4hq{Lw/84443@4.933:0307::6D7}&l{Mx657;89;,K5678H&93D(H<&<>0B90X^I;}Ag1{P%3A+>><975}[S{PZE453?4|T2{Q+5187;>447:81{C=hL6{Me^:=7ii{R=.=F<81;48?|h8}Uh{SE|,VxL{ST,7?9Y_5Xk3A#:$%YSYdXeKXOD8+TXh7(@>(YdXYHXl9J6X_5IXaL0N?3YK7Xh!1?XgYz9YEXhXaYPXhC3X`-YLY_XfVf[EGXZ5L8BXL9YHX]SYTXjLXdJ: YcXbQXg1PX]Yx4|Jr{Ys4.8YU+XIY`0N,<H%-H;:0@,74/:8546I=9177154870UC]d<C3HXl7ALYzXFXWP<<?E!88E5@03YYXJ?YJ@6YxX-YdXhYG|9o{`iXjY_>YVXe>AYFX[/(I@0841?):-B=14337:8=|14{c&93788|di{cW-0>0<097/A;N{FqYpugAFT%X/Yo3Yn,#=XlCYHYNX[Xk3YN:YRT4?)-YH%A5XlYF3C1=NWyY}>:74-C673<69545v {iT85YED=64=.F4..9878/D4378?48B3:7:7/1VX[f4{D,{l<5E75{dAbRB-8-@+;DBF/$ZfW8S<4YhXA.(5@*11YV8./S95C/0R-A4AXQYI7?68167B95HA1*<M3?1/@;/=54XbYP36}lc{qzSS38:19?,/39193574/66878Yw1X-87E6=;964X`T734:>86>1/=0;(I-1::7ALYGXhF+Xk[@W%TYbX7)KXdYEXi,H-XhYMRXfYK?XgXj.9HX_SX]YL1XmYJ>Y}WwIXiI-3-GXcYyXUYJ$X`Vs[7;XnYEZ;XF! 3;%8;PXX(N3Y[)Xi1YE&/ :;74YQ6X`33C;-(>Xm0(TYF/!YGXg8 9L5P01YPXO-5%C|qd{{/K/E6,=0144:361:955;6443@?B7*7:F89&F35YaX-CYf,XiFYRXE_e{}sF 0*7XRYPYfXa5YXXY8Xf8Y~XmA[9VjYj*#YMXIYOXk,HHX40YxYMXU8OXe;YFXLYuPXP?EB[QV0CXfY{:9XV[FWE0D6X^YVP*$4%OXiYQ(|xp|%c3{}V`1>Y`XH00:8/M6XhQ1:;3414|TE|&o@1*=81G8<3}6<|(f6>>>5-5:8;093B^3U*+*^*UT30XgYU&7*O1953)5@E78--F7YF*B&0:%P68W9Zn5974J9::3}Vk|-,C)=)1AJ4+<3YGXfY[XQXmT1M-XcYTYZXCYZXEYXXMYN,17>XIG*SaS|/eYJXbI?XdNZ+WRYP<F:R PXf;0Xg`$|1GX9YdXjLYxWX!ZIXGYaXNYm6X9YMX?9EXmZ&XZ#XQ>YeXRXfAY[4 ;0X!Zz0XdN$XhYL XIY^XGNXUYS/1YFXhYk.TXn4DXjB{jg|4DEX]:XcZMW=A.+QYL<LKXc[vV$+&PX*Z3XMYIXUQ:ZvW< YSXFZ,XBYeXMM)?Xa XiZ4/EXcP3%}&-|6~:1(-+YT$@XIYRBC<}&,|7aJ6}bp|8)K1|Xg|8C}[T|8Q.89;-964I38361<=/;883651467<7:>?1:.}le|:Z=39;1Y^)?:J=?XfLXbXi=Q0YVYOXaXiLXmJXO5?.SFXiCYW}-;|=u&D-X`N0X^,YzYRXO(QX_YW9`I|>hZ:N&X)DQXP@YH#XmNXi$YWX^=!G6YbYdX>XjY|XlX^XdYkX>YnXUXPYF)FXT[EVTMYmYJXmYSXmNXi#GXmT3X8HOX[ZiXN]IU2>8YdX1YbX<YfWuZ8XSXcZU%0;1XnXkZ_WTG,XZYX5YSX Yp 05G?XcYW(IXg6K/XlYP4XnI @XnO1W4Zp-9C@%QDYX+OYeX9>--YSXkD.YR%Q/Yo YUX].Xi<HYEZ2WdCE6YMXa7F)=,D>-@9/8@5=?7164;35387?N<618=6>7D+C50<6B03J0{Hj|N9$D,9I-,.KB3}m |NzE0::/81YqXjMXl7YG; [.W=Z0X4XQY]:MXiR,XgM?9$9>:?E;YE77VS[Y564760391?14941:0=:8B:;/1DXjFA-564=0B3XlH1+D85:0Q!B#:-6&N/:9<-R3/7Xn<*3J4.H:+334B.=>30H.;3833/76464665755:/83H6633:=;.>5645}&E|Y)?1/YG-,93&N3AE@5 <L1-G/8A0D858/30>8<549=@B8] V0[uVQYlXeD(P#ID&7T&7;Xi0;7T-$YE)E=1:E1GR):--0YI7=E<}n9|aT6783A>D7&4YG7=391W;Zx<5+>F#J39}o/|cc;6=A050EQXg8A1-}D-|d^5548083563695D?-.YOXd37I$@LYLWeYlX<Yd+YR A$;3-4YQ-9XmA0!9/XLY_YT(=5XdDI>YJ5XP1ZAW{9>X_6R(XhYO65&J%DA)C-!B:97#A9;@?F;&;(9=11/=657/H,<8}bz|j^5446>.L+&Y^8Xb6?(CYOXb*YF(8X`FYR(XPYVXmPQ%&DD(XmZXW??YOXZXfCYJ79,O)XnYF7K0!QXmXi4IYFRXS,6<%-:YO(+:-3Q!1E1:W,Zo}Am|n~;3580534*?3Zc4=9334361693:30C<6/717:<1/;>59&:4}6!|rS36=1?75<8}[B|s809983579I.A.>84758=108564741H*9E{L{|u%YQ<%6XfH.YUXe4YL@,>N}Tv|ve*G0X)Z;/)3@A74(4P&A1X:YVH97;,754*A66:1 D739E3553545558E4?-?K17/770843XAYf838A7K%N!YW4.$T19Z`WJ*0XdYJXTYOXNZ 1XaN1A+I&Xi.Xk3Z3GB&5%WhZ1+5#Y[X<4YMXhQYoQXVXbYQ8XSYUX4YXBXWDMG0WxZA[8V+Z8X;D],Va$%YeX?FXfX[XeYf<X:Z[WsYz8X_Y]%XmQ(!7BXIZFX]&YE3F$(1XgYgYE& +[+W!<YMYFXc;+PXCYI9YrWxGXY9DY[!GXiI7::)OC;*$.>N*HA@{C|}&k=:<TB83X`3YL+G4XiK]i}(fYK<=5$.FYE%4*5*H*6XkCYL=*6Xi6!Yi1KXR4YHXbC8Xj,B9ZbWx/XbYON#5B}Ue}+QKXnF1&YV5XmYQ0!*3IXBYb71?1B75XmF;0B976;H/RXU:YZX;BG-NXj;XjI>A#D3B636N;,*%<D:0;YRXY973H5)-4FXOYf0:0;/7759774;7;:/855:543L43<?6=E,.A4:C=L)%4YV!1(YE/4YF+ F3%;S;&JC:%/?YEXJ4GXf/YS-EXEYW,9;E}X$}547EXiK=51-?71C%?57;5>463553Zg90;6447?<>4:9.7538XgN{|!}9K/E&3-:D+YE1)YE/3;37/:05}n<}:UX8Yj4Yt864@JYK..G=.(A Q3%6K>3(P3#AYE$-6H/456*C=.XHY[#S.<780191;057C)=6HXj?955B:K1 E>-B/9,;5.!L?:0>/.@//:;7833YZ56<4:YE=/:7Z_WGC%3I6>XkC*&NA16X=Yz2$X:Y^&J48<99k8}CyB-61<18K946YO4{|N}E)YIB9K0L>4=46<1K0+R;6-=1883:478;4,S+3YJX`GJXh.Yp+Xm6MXcYpX(>7Yo,/:X=Z;Xi0YTYHXjYmXiXj;*;I-8S6N#XgY}.3XfYGO3C/$XjL$*NYX,1 6;YH&<XkK9C#I74.>}Hd`A748X[T450[n75<4439:18A107>|ET}Rf<1;14876/Yb983E<5.YNXd4149>,S=/4E/<306443G/06}0&}UkYSXFYF=44=-5095=88;63844,9E6644{PL}WA8:>)7+>763>>0/B3A545CCnT}Xm|dv}Xq1L/YNXk/H8;;.R63351YY747@15YE4J8;46;.38.>4A369.=-83,;Ye3?:3@YE.4-+N353;/;@(X[YYD>@/05-I*@.:551741Yf5>6A443<3535;.58/86=D4753442$635D1>0359NQ @73:3:>><Xn?;43C14 ?Y|X611YG1&<+,4<*,YLXl<1/AIXjF*N89A4Z576K1XbJ5YF.ZOWN.YGXO/YQ01:4G38Xl1;KI0YFXB=R<7;D/,/4>;$I,YGXm94@O35Yz66695385.>:6A#5}W7n^4336:4157597434433<3|XA}m`>=D>:4A.337370?-6Q96{`E|4A}C`|Qs{Mk|J+~r>|o,wHv>Vw}!c{H!|Gb|*Ca5}J||,U{t+{CN[!M65YXOY_*B,Y[Z9XaX[QYJYLXPYuZ%XcZ8LY[SYPYKZM<LMYG9OYqSQYM~[e{UJXmQYyZM_)>YjN1~[f3{aXFY|Yk:48YdH^NZ0|T){jVFYTZNFY^YTYN~[h{nPYMYn3I]`EYUYsYIZEYJ7Yw)YnXPQYH+Z.ZAZY]^Z1Y`YSZFZyGYHXLYG 8Yd#4~[i|+)YH9D?Y^F~Y7|-eYxZ^WHYdYfZQ~[j|3>~[k|3oYmYqY^XYYO=Z*4[]Z/OYLXhZ1YLZIXgYIHYEYK,<Y`YEXIGZI[3YOYcB4SZ!YHZ*&Y{Xi3~[l|JSY`Zz?Z,~[m|O=Yi>??XnYWXmYS617YVYIHZ(Z4[~L4/=~[n|Yu{P)|];YOHHZ}~[o33|a>~[r|aE]DH~[s|e$Zz~[t|kZFY~XhYXZB[`Y}~[u|{SZ&OYkYQYuZ2Zf8D~[v}% ~[w3},Q[X]+YGYeYPIS~[y}4aZ!YN^!6PZ*~[z}?E~[{3}CnZ=~[}}EdDZz/9A3(3S<,YR8.D=*XgYPYcXN3Z5 4)~[~}JW=$Yu.XX~] }KDX`PXdZ4XfYpTJLY[F5]X~[2Yp}U+DZJ::<446[m@~]#3}]1~]%}^LZwZQ5Z`/OT<Yh^ -~]&}jx[ ~m<z!%2+~ly4VY-~o>}p62yz!%2+Xf2+~ly4VY-zQ`z (=] 2z~o2",C={" ":0,"!":1},c=34,i=2,p,s="",u=String.fromCharCode,t=u(12539);for(;++c<127;)C[u(c)]=c^39&&c^92?i++:0;i=0;for(;0<=(c=C[a.charAt(i++)]);)if(16==c)if((c=C[a.charAt(i++)])<87){if(86==c)c=1879;for(;c--;)s+=u(++p)}else s+=s.substr(8272,360);else if(c<86)s+=u(p+=c<51?c-16:(c-55)*92+C[a.charAt(i++)]);else if((c=((c-86)*92+C[a.charAt(i++)])*92+C[a.charAt(i++)])<49152)s+=u(p=c<40960?c:c|57344);else{c&=511;for(;c--;)s+=t;p=12539}return s')();
+    var JCT11280 = new Func('var a="zKV33~jZ4zN=~ji36XazM93y!{~k2y!o~k0ZlW6zN?3Wz3W?{EKzK[33[`y|;-~j^YOTz$!~kNy|L1$353~jV3zKk3~k-4P4zK_2+~jY4y!xYHR~jlz$_~jk4z$e3X5He<0y!wy|X3[:~l|VU[F3VZ056Hy!nz/m1XD61+1XY1E1=1y|bzKiz!H034zKj~mEz#c5ZA3-3X$1~mBz$$3~lyz#,4YN5~mEz#{ZKZ3V%7Y}!J3X-YEX_J(3~mAz =V;kE0/y|F3y!}~m>z/U~mI~j_2+~mA~jp2;~m@~k32;~m>V}2u~mEX#2x~mBy+x2242(~mBy,;2242(~may->2&XkG2;~mIy-_2&NXd2;~mGz,{4<6:.:B*B:XC4>6:.>B*BBXSA+A:X]E&E<~r#z+625z s2+zN=`HXI@YMXIAXZYUM8X4K/:Q!Z&33 3YWX[~mB`{zKt4z (zV/z 3zRw2%Wd39]S11z$PAXH5Xb;ZQWU1ZgWP%3~o@{Dgl#gd}T){Uo{y5_d{e@}C(} WU9|cB{w}bzvV|)[} H|zT}d||0~{]Q|(l{|x{iv{dw}(5}[Z|kuZ }cq{{y|ij}.I{idbof%cu^d}Rj^y|-M{ESYGYfYsZslS`?ZdYO__gLYRZ&fvb4oKfhSf^d<Yeasc1f&a=hnYG{QY{D`Bsa|u,}Dl|_Q{C%xK|Aq}C>|c#ryW=}eY{L+`)][YF_Ub^h4}[X|?r|u_ex}TL@YR]j{SrXgo*|Gv|rK}B#mu{R1}hs|dP{C7|^Qt3|@P{YVV |8&}#D}ef{e/{Rl|>Hni}R1{Z#{D[}CQlQ||E}[s{SG_+i8eplY[=[|ec[$YXn#`hcm}YR|{Ci(_[ql|?8p3]-}^t{wy}4la&pc|3e{Rp{LqiJ],] `kc(]@chYnrM`O^,ZLYhZB]ywyfGY~aex!_Qww{a!|)*lHrM{N+n&YYj~Z b c#e_[hZSon|rOt`}hBXa^i{lh|<0||r{KJ{kni)|x,|0auY{D!^Sce{w;|@S|cA}Xn{C1h${E]Z-XgZ*XPbp]^_qbH^e[`YM|a||+=]!Lc}]vdBc=j-YSZD]YmyYLYKZ9Z>Xcczc2{Yh}9Fc#Z.l{}(D{G{{mRhC|L3b#|xK[Bepj#ut`H[,{E9Yr}1b{[e]{ZFk7[ZYbZ0XL]}Ye[(`d}c!|*y`Dg=b;gR]Hm=hJho}R-[n}9;{N![7k_{UbmN]rf#pTe[x8}!Qcs_rs[m`|>N}^V})7{^r|/E}),}HH{OYe2{Skx)e<_.cj.cjoMhc^d}0uYZd!^J_@g,[[[?{i@][|3S}Yl3|!1|eZ|5IYw|1D}e7|Cv{OHbnx-`wvb[6[4} =g+k:{C:}ed{S]|2M]-}WZ|/q{LF|dYu^}Gs^c{Z=}h>|/i|{W]:|ip{N:|zt|S<{DH[p_tvD{N<[8Axo{X4a.^o^X>Yfa59`#ZBYgY~_t^9`jZHZn`>G[oajZ;X,i)Z.^~YJe ZiZF^{][[#Zt^|]Fjx]&_5dddW]P0C[-]}]d|y {C_jUql] |OpaA[Z{lp|rz}:Mu#]_Yf6{Ep?f5`$[6^D][^u[$[6^.Z8]]ePc2U/=]K^_+^M{q*|9tYuZ,s(dS{i=|bNbB{uG}0jZOa:[-]dYtu3]:]<{DJ_SZIqr_`l=Yt`gkTnXb3d@kiq0a`Z{|!B|}e}Ww{Sp,^Z|0>_Z}36|]A|-t}lt{R6pi|v8hPu#{C>YOZHYmg/Z4nicK[}hF_Bg|YRZ7c|crkzYZY}_iXcZ.|)U|L5{R~qi^Uga@Y[xb}&qdbd6h5|Btw[}c<{Ds53[Y7]?Z<|e0{L[ZK]mXKZ#Z2^tavf0`PE[OSOaP`4gi`qjdYMgys/?[nc,}EEb,eL]g[n{E_b/vcvgb.{kcwi`~v%|0:|iK{Jh_vf5lb}KL|(oi=LrzhhY_^@`zgf[~g)[J_0fk_V{T)}I_{D&_/d9W/|MU[)f$xW}?$xr4<{Lb{y4}&u{XJ|cm{Iu{jQ}CMkD{CX|7A}G~{kt)nB|d5|<-}WJ}@||d@|Iy}Ts|iL|/^|no|0;}L6{Pm]7}$zf:|r2}?C_k{R(}-w|`G{Gy[g]bVje=_0|PT{^Y^yjtT[[[l!Ye_`ZN]@[n_)j3nEgMa]YtYpZy].d-Y_cjb~Y~[nc~sCi3|zg}B0}do{O^{|$`_|D{}U&|0+{J3|8*]iayx{a{xJ_9|,c{Ee]QXlYb]$[%YMc*]w[aafe]aVYi[fZEii[xq2YQZHg]Y~h#|Y:thre^@^|_F^CbTbG_1^qf7{L-`VFx Zr|@EZ;gkZ@slgko`[e}T:{Cu^pddZ_`yav^Ea+[#ZBbSbO`elQfLui}.F|txYcbQ`XehcGe~fc^RlV{D_0ZAej[l&jShxG[ipB_=u:eU}3e8[=j|{D(}dO{Do[BYUZ0/]AYE]ALYhZcYlYP/^-^{Yt_1_-;YT`P4BZG=IOZ&]H[e]YYd[9^F[1YdZxZ?Z{Z<]Ba2[5Yb[0Z4l?]d_;_)a?YGEYiYv`_XmZs4ZjY^Zb]6gqGaX^9Y}dXZr[g|]Y}K aFZp^k^F]M`^{O1Ys]ZCgCv4|E>}8eb7}l`{L5[Z_faQ|c2}Fj}hw^#|Ng|B||w2|Sh{v+[G}aB|MY}A{|8o}X~{E8paZ:]i^Njq]new)`-Z>haounWhN}c#{DfZ|fK]KqGZ=:u|fqoqcv}2ssm}.r{]{nIfV{JW)[K|,Z{Uxc|]l_KdCb%]cfobya3`p}G^|LZiSC]U|(X|kBlVg[kNo({O:g:|-N|qT}9?{MBiL}Sq{`P|3a|u.{Uaq:{_o|^S}jX{Fob0`;|#y_@[V[K|cw[<_ }KU|0F}d3|et{Q7{LuZttsmf^kYZ`Af`}$x}U`|Ww}d]| >}K,r&|XI|*e{C/a-bmr1fId4[;b>tQ_:]hk{b-pMge]gfpo.|(w[jgV{EC1Z,YhaY^q,_G[c_g[J0YX]`[h^hYK^_Yib,` {i6vf@YM^hdOKZZn(jgZ>bzSDc^Z%[[o9[2=/YHZ(_/Gu_`*|8z{DUZxYt^vuvZjhi^lc&gUd4|<UiA`z]$b/Z?l}YI^jaHxe|;F}l${sQ}5g}hA|e4}?o{ih}Uz{C)jPe4]H^J[Eg[|AMZMlc}:,{iz}#*|gc{Iq|/:|zK{l&}#u|myd{{M&v~nV};L|(g|I]ogddb0xsd7^V})$uQ{HzazsgxtsO^l}F>ZB]r|{7{j@cU^{{CbiYoHlng]f+nQ[bkTn/}<-d9q {KXadZYo+n|l[|lc}V2{[a{S4Zam~Za^`{HH{xx_SvF|ak=c^[v^7_rYT`ld@]:_ub%[$[m](Shu}G2{E.ZU_L_R{tz`vj(f?^}hswz}GdZ}{S:h`aD|?W|`dgG|if{a8|J1{N,}-Ao3{H#{mfsP|[ bzn+}_Q{MT{u4kHcj_q`eZj[8o0jy{p7}C|[}l){MuYY{|Ff!Ykn3{rT|m,^R|,R}$~Ykgx{P!]>iXh6[l[/}Jgcg{JYZ.^qYfYIZl[gZ#Xj[Pc7YyZD^+Yt;4;`e8YyZVbQ7YzZxXja.7SYl[s]2^/Ha$[6ZGYrb%XiYdf2]H]kZkZ*ZQ[ZYS^HZXcCc%Z|[(bVZ]]:OJQ_DZCg<[,]%Zaa [g{C00HY[c%[ChyZ,Z_`PbXa+eh`^&jPi0a[ggvhlekL]w{Yp^v}[e{~;k%a&k^|nR_z_Qng}[E}*Wq:{k^{FJZpXRhmh3^p>de^=_7`|ZbaAZtdhZ?n4ZL]u`9ZNc3g%[6b=e.ZVfC[ZZ^^^hD{E(9c(kyZ=bb|Sq{k`|vmr>izlH[u|e`}49}Y%}FT{[z{Rk}Bz{TCc/lMiAqkf(m$hDc;qooi[}^o:c^|Qm}a_{mrZ(pA`,}<2sY| adf_%|}`}Y5U;}/4|D>|$X{jw{C<|F.hK|*A{MRZ8Zsm?imZm_?brYWZrYx`yVZc3a@f?aK^ojEd {bN}/3ZH]/$YZhm^&j 9|(S|b]mF}UI{q&aM]LcrZ5^.|[j`T_V_Gak}9J[ ZCZD|^h{N9{~&[6Zd{}B}2O|cv]K}3s}Uy|l,fihW{EG`j_QOp~Z$F^zexS`dcISfhZBXP|.vn|_HYQ|)9|cr]<`&Z6]m_(ZhPcSg>`Z]5`~1`0Xcb4k1{O!bz|CN_T{LR|a/gFcD|j<{Z._[f)mPc:1`WtIaT1cgYkZOaVZOYFrEe[}T$}Ch}mk{K-^@]fH{Hdi`c*Z&|Kt{if[C{Q;{xYB`dYIX:ZB[}]*[{{p9|4GYRh2ao{DS|V+[zd$`F[ZXKadb*A] Ys]Maif~a/Z2bmclb8{Jro_rz|x9cHojbZ{GzZx_)]:{wAayeDlx}<=`g{H1{l#}9i|)=|lP{Qq}.({La|!Y{i2EZfp=c*}Cc{EDvVB|;g}2t{W4av^Bn=]ri,|y?|3+}T*ckZ*{Ffr5e%|sB{lx^0]eZb]9[SgAjS_D|uHZx]dive[c.YPkcq/}db{EQh&hQ|eg}G!ljil|BO]X{Qr_GkGl~YiYWu=c3eb}29v3|D|}4i||.{Mv})V{SP1{FX}CZW6{cm|vO{pS|e#}A~|1i}81|Mw}es|5[}3w{C`h9aL]o{}p[G`>i%a1Z@`Ln2bD[$_h`}ZOjhdTrH{[j_:k~kv[Sdu]CtL}41{I |[[{]Zp$]XjxjHt_eThoa#h>sSt8|gK|TVi[Y{t=}Bs|b7Zpr%{gt|Yo{CS[/{iteva|cf^hgn}($_c^wmb^Wm+|55jrbF|{9^ q6{C&c+ZKdJkq_xOYqZYSYXYl`8]-cxZAq/b%b*_Vsa[/Ybjac/OaGZ4fza|a)gY{P?| I|Y |,pi1n7}9bm9ad|=d{aV|2@[(}B`d&|Uz}B}{`q|/H|!JkM{FU|CB|.{}Az}#P|lk}K{|2rk7{^8^?`/|k>|Ka{Sq}Gz}io{DxZh[yK_#}9<{TRdgc]`~Z>JYmYJ]|`!ZKZ]gUcx|^E[rZCd`f9oQ[NcD_$ZlZ;Zr}mX|=!|$6ZPZYtIo%fj}CpcN|B,{VDw~gb}@hZg`Q{LcmA[(bo`<|@$|o1|Ss}9Z_}tC|G`{F/|9nd}i=}V-{L8aaeST]daRbujh^xlpq8|}zs4bj[S`J|]?G{P#{rD{]I`OlH{Hm]VYuSYUbRc*6[j`8]pZ[bt_/^Jc*[<Z?YE|Xb|?_Z^Vcas]h{t9|Uwd)_(=0^6Zb{Nc} E[qZAeX[a]P^|_J>e8`W^j_Y}R{{Jp__]Ee#e:iWb9q_wKbujrbR}CY`,{mJ}gz{Q^{t~N|? gSga`V_||:#mi}3t|/I`X{N*|ct|2g{km}gi|{={jC}F;|E}{ZZjYf*frmu}8Tdroi{T[|+~}HG{cJ}DM{Lp{Ctd&}$hi3|FZ| m}Kr|38}^c|m_|Tr{Qv|36}?Up>|;S{DV{k_as}BK{P}}9p|t`jR{sAm4{D=b4pWa[}Xi{EjwEkI}3S|E?u=X0{jf} S|NM|JC{qo^3cm]-|JUx/{Cj{s>{Crt[UXuv|D~|j|d{YXZR}Aq}0r}(_{pJfi_z}0b|-vi)Z mFe,{f4|q`b{}^Z{HM{rbeHZ|^x_o|XM|L%|uFXm}@C_{{Hhp%a7|0p[Xp+^K}9U{bP}: tT}B|}+$|b2|[^|~h{FAby[`{}xgygrt~h1[li`c4vz|,7p~b(|mviN}^pg[{N/|g3|^0c,gE|f%|7N{q[|tc|TKA{LU}I@|AZp(}G-sz{F |qZ{}F|f-}RGn6{Z]_5})B}UJ{FFb2]4ZI@v=k,]t_Dg5Bj]Z-]L]vrpdvdGlk|gF}G]|IW}Y0[G| /bo|Te^,_B}#n^^{QHYI[?hxg{[`]D^IYRYTb&kJ[cri[g_9]Ud~^_]<p@_e_XdNm-^/|5)|h_{J;{kacVopf!q;asqd}n)|.m|bf{QW|U)}b+{tL|w``N|to{t ZO|T]jF}CB|0Q{e5Zw|k |We}5:{HO{tPwf_uajjBfX}-V_C_{{r~gg|Ude;s+}KNXH}! `K}eW{Upwbk%ogaW}9EYN}YY|&v|SL{C3[5s.]Y]I]u{M6{pYZ`^,`ZbCYR[1mNg>rsk0Ym[jrE]RYiZTr*YJ{Ge|%-lf|y(`=[t}E6{k!|3)}Zk} ][G{E~cF{u3U.rJ|a9p#o#ZE|?|{sYc#vv{E=|LC}cu{N8`/`3`9rt[4|He{cq|iSYxY`}V |(Q|t4{C?]k_Vlvk)BZ^r<{CL}#h}R+[<|i=}X|{KAo]|W<`K{NW|Zx}#;|fe{IMr<|K~tJ_x}AyLZ?{GvbLnRgN}X&{H7|x~}Jm{]-| GpNu0}.ok>|c4{PYisrDZ|fwh9|hfo@{H~XSbO]Odv]%`N]b1Y]]|eIZ}_-ZA]aj,>eFn+j[aQ_+]h[J_m_g]%_wf.`%k1e#Z?{CvYu_B^|gk`Xfh^M3`afGZ-Z|[m{L}|k3cp[it ^>YUi~d>{T*}YJ{Q5{Jxa$hg|%4`}|LAgvb }G}{P=|<;Ux{_skR{cV|-*|s-{Mp|XP|$G|_J}c6cM{_=_D|*9^$ec{V;|4S{qO|w_|.7}d0|/D}e}|0G{Dq]Kdp{}dfDi>}B%{Gd|nl}lf{C-{y}|ANZr}#={T~|-(}c&{pI|ft{lsVP}){|@u}!W|bcmB{d?|iW|:dxj{PSkO|Hl]Li:}VYk@|2={fnWt{M3`cZ6|)}|Xj}BYa?vo{e4|L7|B7{L7|1W|lvYO}W8nJ|$Vih|{T{d*_1|:-n2dblk``fT{Ky|-%}m!|Xy|-a{Pz}[l{kFjz|iH}9N{WE{x,|jz}R {P|{D)c=nX|Kq|si}Ge{sh|[X{RF{t`|jsr*fYf,rK|/9}$}}Nf{y!1|<Std}4Wez{W${Fd_/^O[ooqaw_z[L`Nbv[;l7V[ii3_PeM}.h^viqYjZ*j1}+3{bt{DR[;UG}3Og,rS{JO{qw{d<_zbAh<R[1_r`iZTbv^^a}c{iEgQZ<exZFg.^Rb+`Uj{a+{z<[~r!]`[[|rZYR|?F|qppp]L|-d|}K}YZUM|=Y|ktm*}F]{D;g{uI|7kg^}%?Z%ca{N[_<q4xC]i|PqZC]n}.bDrnh0Wq{tr|OMn6tM|!6|T`{O`|>!]ji+]_bTeU}Tq|ds}n|{Gm{z,f)}&s{DPYJ`%{CGd5v4tvb*hUh~bf]z`jajiFqAii]bfy^U{Or|m+{I)cS|.9k:e3`^|xN}@Dnlis`B|Qo{`W|>||kA}Y}{ERYuYx`%[exd`]|OyiHtb}HofUYbFo![5|+]gD{NIZR|Go}.T{rh^4]S|C9_}xO^i`vfQ}C)bK{TL}cQ|79iu}9a];sj{P.o!f[Y]pM``Jda^Wc9ZarteBZClxtM{LW}l9|a.mU}KX}4@{I+f1}37|8u}9c|v${xGlz}jP{Dd1}e:}31}%3X$|22i<v+r@~mf{sN{C67G97855F4YL5}8f{DT|xy{sO{DXB334@55J1)4.G9A#JDYtXTYM4, YQD9;XbXm9SX]IB^4UN=Xn<5(;(F3YW@XkH-X_VM[DYM:5XP!T&Y`6|,^{IS-*D.H>:LXjYQ0I3XhAF:9:(==.F*3F1189K/7163D,:@|e2{LS36D4hq{Lw/84443@4.933:0307::6D7}&l{Mx657;89;,K5678H&93D(H<&<>0B90X^I;}Ag1{P%3A+>><975}[S{PZE453?4|T2{Q+5187;>447:81{C=hL6{Me^:=7ii{R=.=F<81;48?|h8}Uh{SE|,VxL{ST,7?9Y_5Xk3A#:$%YSYdXeKXOD8+TXh7(@>(YdXYHXl9J6X_5IXaL0N?3YK7Xh!1?XgYz9YEXhXaYPXhC3X`-YLY_XfVf[EGXZ5L8BXL9YHX]SYTXjLXdJ: YcXbQXg1PX]Yx4|Jr{Ys4.8YU+XIY`0N,<H%-H;:0@,74/:8546I=9177154870UC]d<C3HXl7ALYzXFXWP<<?E!88E5@03YYXJ?YJ@6YxX-YdXhYG|9o{`iXjY_>YVXe>AYFX[/(I@0841?):-B=14337:8=|14{c&93788|di{cW-0>0<097/A;N{FqYpugAFT%X/Yo3Yn,#=XlCYHYNX[Xk3YN:YRT4?)-YH%A5XlYF3C1=NWyY}>:74-C673<69545v {iT85YED=64=.F4..9878/D4378?48B3:7:7/1VX[f4{D,{l<5E75{dAbRB-8-@+;DBF/$ZfW8S<4YhXA.(5@*11YV8./S95C/0R-A4AXQYI7?68167B95HA1*<M3?1/@;/=54XbYP36}lc{qzSS38:19?,/39193574/66878Yw1X-87E6=;964X`T734:>86>1/=0;(I-1::7ALYGXhF+Xk[@W%TYbX7)KXdYEXi,H-XhYMRXfYK?XgXj.9HX_SX]YL1XmYJ>Y}WwIXiI-3-GXcYyXUYJ$X`Vs[7;XnYEZ;XF! 3;%8;PXX(N3Y[)Xi1YE&/ :;74YQ6X`33C;-(>Xm0(TYF/!YGXg8 9L5P01YPXO-5%C|qd{{/K/E6,=0144:361:955;6443@?B7*7:F89&F35YaX-CYf,XiFYRXE_e{}sF 0*7XRYPYfXa5YXXY8Xf8Y~XmA[9VjYj*#YMXIYOXk,HHX40YxYMXU8OXe;YFXLYuPXP?EB[QV0CXfY{:9XV[FWE0D6X^YVP*$4%OXiYQ(|xp|%c3{}V`1>Y`XH00:8/M6XhQ1:;3414|TE|&o@1*=81G8<3}6<|(f6>>>5-5:8;093B^3U*+*^*UT30XgYU&7*O1953)5@E78--F7YF*B&0:%P68W9Zn5974J9::3}Vk|-,C)=)1AJ4+<3YGXfY[XQXmT1M-XcYTYZXCYZXEYXXMYN,17>XIG*SaS|/eYJXbI?XdNZ+WRYP<F:R PXf;0Xg`$|1GX9YdXjLYxWX!ZIXGYaXNYm6X9YMX?9EXmZ&XZ#XQ>YeXRXfAY[4 ;0X!Zz0XdN$XhYL XIY^XGNXUYS/1YFXhYk.TXn4DXjB{jg|4DEX]:XcZMW=A.+QYL<LKXc[vV$+&PX*Z3XMYIXUQ:ZvW< YSXFZ,XBYeXMM)?Xa XiZ4/EXcP3%}&-|6~:1(-+YT$@XIYRBC<}&,|7aJ6}bp|8)K1|Xg|8C}[T|8Q.89;-964I38361<=/;883651467<7:>?1:.}le|:Z=39;1Y^)?:J=?XfLXbXi=Q0YVYOXaXiLXmJXO5?.SFXiCYW}-;|=u&D-X`N0X^,YzYRXO(QX_YW9`I|>hZ:N&X)DQXP@YH#XmNXi$YWX^=!G6YbYdX>XjY|XlX^XdYkX>YnXUXPYF)FXT[EVTMYmYJXmYSXmNXi#GXmT3X8HOX[ZiXN]IU2>8YdX1YbX<YfWuZ8XSXcZU%0;1XnXkZ_WTG,XZYX5YSX Yp 05G?XcYW(IXg6K/XlYP4XnI @XnO1W4Zp-9C@%QDYX+OYeX9>--YSXkD.YR%Q/Yo YUX].Xi<HYEZ2WdCE6YMXa7F)=,D>-@9/8@5=?7164;35387?N<618=6>7D+C50<6B03J0{Hj|N9$D,9I-,.KB3}m |NzE0::/81YqXjMXl7YG; [.W=Z0X4XQY]:MXiR,XgM?9$9>:?E;YE77VS[Y564760391?14941:0=:8B:;/1DXjFA-564=0B3XlH1+D85:0Q!B#:-6&N/:9<-R3/7Xn<*3J4.H:+334B.=>30H.;3833/76464665755:/83H6633:=;.>5645}&E|Y)?1/YG-,93&N3AE@5 <L1-G/8A0D858/30>8<549=@B8] V0[uVQYlXeD(P#ID&7T&7;Xi0;7T-$YE)E=1:E1GR):--0YI7=E<}n9|aT6783A>D7&4YG7=391W;Zx<5+>F#J39}o/|cc;6=A050EQXg8A1-}D-|d^5548083563695D?-.YOXd37I$@LYLWeYlX<Yd+YR A$;3-4YQ-9XmA0!9/XLY_YT(=5XdDI>YJ5XP1ZAW{9>X_6R(XhYO65&J%DA)C-!B:97#A9;@?F;&;(9=11/=657/H,<8}bz|j^5446>.L+&Y^8Xb6?(CYOXb*YF(8X`FYR(XPYVXmPQ%&DD(XmZXW??YOXZXfCYJ79,O)XnYF7K0!QXmXi4IYFRXS,6<%-:YO(+:-3Q!1E1:W,Zo}Am|n~;3580534*?3Zc4=9334361693:30C<6/717:<1/;>59&:4}6!|rS36=1?75<8}[B|s809983579I.A.>84758=108564741H*9E{L{|u%YQ<%6XfH.YUXe4YL@,>N}Tv|ve*G0X)Z;/)3@A74(4P&A1X:YVH97;,754*A66:1 D739E3553545558E4?-?K17/770843XAYf838A7K%N!YW4.$T19Z`WJ*0XdYJXTYOXNZ 1XaN1A+I&Xi.Xk3Z3GB&5%WhZ1+5#Y[X<4YMXhQYoQXVXbYQ8XSYUX4YXBXWDMG0WxZA[8V+Z8X;D],Va$%YeX?FXfX[XeYf<X:Z[WsYz8X_Y]%XmQ(!7BXIZFX]&YE3F$(1XgYgYE& +[+W!<YMYFXc;+PXCYI9YrWxGXY9DY[!GXiI7::)OC;*$.>N*HA@{C|}&k=:<TB83X`3YL+G4XiK]i}(fYK<=5$.FYE%4*5*H*6XkCYL=*6Xi6!Yi1KXR4YHXbC8Xj,B9ZbWx/XbYON#5B}Ue}+QKXnF1&YV5XmYQ0!*3IXBYb71?1B75XmF;0B976;H/RXU:YZX;BG-NXj;XjI>A#D3B636N;,*%<D:0;YRXY973H5)-4FXOYf0:0;/7759774;7;:/855:543L43<?6=E,.A4:C=L)%4YV!1(YE/4YF+ F3%;S;&JC:%/?YEXJ4GXf/YS-EXEYW,9;E}X$}547EXiK=51-?71C%?57;5>463553Zg90;6447?<>4:9.7538XgN{|!}9K/E&3-:D+YE1)YE/3;37/:05}n<}:UX8Yj4Yt864@JYK..G=.(A Q3%6K>3(P3#AYE$-6H/456*C=.XHY[#S.<780191;057C)=6HXj?955B:K1 E>-B/9,;5.!L?:0>/.@//:;7833YZ56<4:YE=/:7Z_WGC%3I6>XkC*&NA16X=Yz2$X:Y^&J48<99k8}CyB-61<18K946YO4{|N}E)YIB9K0L>4=46<1K0+R;6-=1883:478;4,S+3YJX`GJXh.Yp+Xm6MXcYpX(>7Yo,/:X=Z;Xi0YTYHXjYmXiXj;*;I-8S6N#XgY}.3XfYGO3C/$XjL$*NYX,1 6;YH&<XkK9C#I74.>}Hd`A748X[T450[n75<4439:18A107>|ET}Rf<1;14876/Yb983E<5.YNXd4149>,S=/4E/<306443G/06}0&}UkYSXFYF=44=-5095=88;63844,9E6644{PL}WA8:>)7+>763>>0/B3A545CCnT}Xm|dv}Xq1L/YNXk/H8;;.R63351YY747@15YE4J8;46;.38.>4A369.=-83,;Ye3?:3@YE.4-+N353;/;@(X[YYD>@/05-I*@.:551741Yf5>6A443<3535;.58/86=D4753442$635D1>0359NQ @73:3:>><Xn?;43C14 ?Y|X611YG1&<+,4<*,YLXl<1/AIXjF*N89A4Z576K1XbJ5YF.ZOWN.YGXO/YQ01:4G38Xl1;KI0YFXB=R<7;D/,/4>;$I,YGXm94@O35Yz66695385.>:6A#5}W7n^4336:4157597434433<3|XA}m`>=D>:4A.337370?-6Q96{`E|4A}C`|Qs{Mk|J+~r>|o,wHv>Vw}!c{H!|Gb|*Ca5}J||,U{t+{CN[!M65YXOY_*B,Y[Z9XaX[QYJYLXPYuZ%XcZ8LY[SYPYKZM<LMYG9OYqSQYM~[e{UJXmQYyZM_)>YjN1~[f3{aXFY|Yk:48YdH^NZ0|T){jVFYTZNFY^YTYN~[h{nPYMYn3I]`EYUYsYIZEYJ7Yw)YnXPQYH+Z.ZAZY]^Z1Y`YSZFZyGYHXLYG 8Yd#4~[i|+)YH9D?Y^F~Y7|-eYxZ^WHYdYfZQ~[j|3>~[k|3oYmYqY^XYYO=Z*4[]Z/OYLXhZ1YLZIXgYIHYEYK,<Y`YEXIGZI[3YOYcB4SZ!YHZ*&Y{Xi3~[l|JSY`Zz?Z,~[m|O=Yi>??XnYWXmYS617YVYIHZ(Z4[~L4/=~[n|Yu{P)|];YOHHZ}~[o33|a>~[r|aE]DH~[s|e$Zz~[t|kZFY~XhYXZB[`Y}~[u|{SZ&OYkYQYuZ2Zf8D~[v}% ~[w3},Q[X]+YGYeYPIS~[y}4aZ!YN^!6PZ*~[z}?E~[{3}CnZ=~[}}EdDZz/9A3(3S<,YR8.D=*XgYPYcXN3Z5 4)~[~}JW=$Yu.XX~] }KDX`PXdZ4XfYpTJLY[F5]X~[2Yp}U+DZJ::<446[m@~]#3}]1~]%}^LZwZQ5Z`/OT<Yh^ -~]&}jx[ ~m<z!%2+~ly4VY-~o>}p62yz!%2+Xf2+~ly4VY-zQ`z (=] 2z~o2",C={" ":0,"!":1},c=34,i=2,p,s="",u=String.fromCharCode,t=u(12539);for(;++c<127;)C[u(c)]=c^39&&c^92?i++:0;i=0;for(;0<=(c=C[a.charAt(i++)]);)if(16===c)if((c=C[a.charAt(i++)])<87){if(86===c)c=1879;for(;c--;)s+=u(++p)}else s+=s.substr(8272,360);else if(c<86)s+=u(p+=c<51?c-16:(c-55)*92+C[a.charAt(i++)]);else if((c=((c-86)*92+C[a.charAt(i++)])*92+C[a.charAt(i++)])<49152)s+=u(p=c<40960?c:c|57344);else{c&=511;for(;c--;)s+=t;p=12539}return s')();
 
     /**
      * @param str
@@ -108,7 +111,7 @@ if (!('swf2js' in window)){(function(window)
             {
                 var c = _parseInt(s.substring(1, 3), 16);
                 var l = s.length;
-                return 3==l?_fromCharCode(c<160?c:c+65216):JCT11280.charAt((c<160?c-129:c-193)*188+(4==l?s.charCodeAt(3)-64:(c=_parseInt(s.substring(4),16))<127?c-64:c-65));
+                return 3===l?_fromCharCode(c<160?c:c+65216):JCT11280.charAt((c<160?c-129:c-193)*188+(4===l?s.charCodeAt(3)-64:(c=_parseInt(s.substring(4),16))<127?c-64:c-65));
             }
         );
     }
@@ -131,9 +134,13 @@ if (!('swf2js' in window)){(function(window)
         var execute = function(src, obj)
         {
             var _cloneArray = cloneArray;
-            for(var prop in src) {
+            var prop;
+            for (prop in src) {
+                if (!src.hasOwnProperty(prop)) {
+                    continue;
+                }
                 var value = src[prop];
-                if (prop == 'Matrix' || prop == 'ColorTransform') {
+                if (prop === "Matrix" || prop === "ColorTransform") {
                     obj[prop] = _cloneArray(value);
                 } else if(value instanceof Array) {
                     obj[prop] = [];
@@ -158,27 +165,32 @@ if (!('swf2js' in window)){(function(window)
      */
     function cloneArray(src)
     {
-        var clone = [];
+        var arr = [];
         var length = src.length;
-        if (isArrayBuffer)
-            clone = new Float32Array(length);
-        for (var i = 0; i < length; i++)
-            clone[i] = src[i];
-        return clone;
+        if (isArrayBuffer) {
+            arr = new Float32Array(length);
+        }
+        for (var i = 0; i < length; i++) {
+            arr[i] = src[i];
+        }
+        return arr;
     }
 
     /**
-     * リサイズ
+     * Resize
      */
     function onResizeCanvas()
     {
         var length = stages.length;
         for (var i = 0; i < length; i++) {
-            if (!(i in stages))
+            if (!(i in stages)) {
                 continue;
+            }
             var stage = stages[i];
-            if (stage.isLoad)
-                stage.resize();
+            if (!stage.isLoad) {
+                continue;
+            }
+            stage.resize();
         }
     }
 
@@ -268,7 +280,7 @@ if (!('swf2js' in window)){(function(window)
             G : _floor(_max(0, _min((G * data[1]) + data[5], 255))),
             B : _floor(_max(0, _min((B * data[2]) + data[6], 255))),
             A : _max(0, _min((A * data[3]) + data[7], 255)) / 255
-        }
+        };
     }
 
     /**
@@ -286,19 +298,20 @@ if (!('swf2js' in window)){(function(window)
                 {
                     audio.loopCount--;
                     if (!this.loopCount) {
-                        audio.removeEventListener('ended', loopSound);
+                        audio.removeEventListener("ended", loopSound);
                     } else {
                         audio.currentTime = 0;
-                        if (soundInfo.HasInPoint)
+                        if (soundInfo.HasInPoint) {
                             audio.currentTime = soundInfo.InPoint;
+                        }
                         audio.play();
                     }
                 };
-                audio.addEventListener('ended', loopSound);
+                audio.addEventListener("ended", loopSound);
             }
 
             if (soundInfo.HasInPoint) {
-                audio.addEventListener('canplay', function() {
+                audio.addEventListener("canplay", function() {
                     this.currentTime = soundInfo.InPoint;
                 });
             }
@@ -314,38 +327,38 @@ if (!('swf2js' in window)){(function(window)
     function checkMethod(method)
     {
         var methods = {
-            gotoandstop: 'gotoAndStop',
-            gotoandplay: 'gotoAndPlay',
-            play: 'play',
-            stop: 'stop',
-            duplicatemovieclip: 'duplicateMovieClip',
-            getproperty: 'getProperty',
-            onclipevent: 'onClipEvent',
-            removemovieclip: 'removeMovieClip',
-            setproperty: 'setProperty',
-            startdrag: 'startDrag',
-            stopdrag: 'stopDrag',
-            targetpath: 'targetPath',
-            updateafterevent: 'updateAfterEvent',
-            nextframe: 'nextFrame',
-            nextscene: 'nextScene',
-            prevframe: 'prevFrame',
-            prevscene: 'prevScene',
-            stopallsounds: 'stopAllSounds',
-            setmask: 'setMask',
-            geturl: 'getURL',
-            loadmovie: 'loadMovie',
-            loadmovienum: 'loadMovieNum',
-            loadvariables : 'loadVariables',
-            loadvariablesnum: 'loadVariablesNum',
-            unloadmovie: 'unloadMovie',
-            unloadmovienum: 'unloadMovieNum',
-            swapdepths: 'swapDepths',
-            attachmovie: 'attachMovie',
-            getnexthighestdepth: 'getNextHighestDepth',
-            getbytesloaded: 'getBytesLoaded',
-            getbytestotal: 'getBytesTotal',
-            assetpropflags: 'ASSetPropFlags'
+            gotoandstop: "gotoAndStop",
+            gotoandplay: "gotoAndPlay",
+            play: "play",
+            stop: "stop",
+            duplicatemovieclip: "duplicateMovieClip",
+            getproperty: "getProperty",
+            onclipevent: "onClipEvent",
+            removemovieclip: "removeMovieClip",
+            setproperty: "setProperty",
+            startdrag: "startDrag",
+            stopdrag: "stopDrag",
+            targetpath: "targetPath",
+            updateafterevent: "updateAfterEvent",
+            nextframe: "nextFrame",
+            nextscene: "nextScene",
+            prevframe: "prevFrame",
+            prevscene: "prevScene",
+            stopallsounds: "stopAllSounds",
+            setmask: "setMask",
+            geturl: "getURL",
+            loadmovie: "loadMovie",
+            loadmovienum: "loadMovieNum",
+            loadvariables : "loadVariables",
+            loadvariablesnum: "loadVariablesNum",
+            unloadmovie: "unloadMovie",
+            unloadmovienum: "unloadMovieNum",
+            swapdepths: "swapDepths",
+            attachmovie: "attachMovie",
+            getnexthighestdepth: "getNextHighestDepth",
+            getbytesloaded: "getBytesLoaded",
+            getbytestotal: "getBytesTotal",
+            assetpropflags: "ASSetPropFlags"
         };
 
         var lowerMethod = method.toLowerCase();
@@ -361,7 +374,8 @@ if (!('swf2js' in window)){(function(window)
     {
         var sym = 0;
         var i = 0;
-        var buff = [];
+        var length = 0;
+        var data = [];
         var bitLengths = [];
         var _buildHuffTable = buildHuffTable;
         var _decodeSymbol = decodeSymbol;
@@ -401,44 +415,48 @@ if (!('swf2js' in window)){(function(window)
             DISTS = new Uint16Array(DISTS);
         }
 
+        var startOffset = 2;
         if (isDeCompress) {
-            bitio.setOffset(10, 8);
-        } else {
-            bitio.setOffset(2, 8);
+            startOffset = 10;
         }
+        bitio.setOffset(startOffset, 8);
 
-        for (; !done; ) {
-            var done = bitio.readUB(1);
+        for (var flag = 0; !flag; ) {
+            flag = bitio.readUB(1);
             var type = bitio.readUB(2);
-
             var distTable = {};
             var litTable = {};
             var fixedDistTable = false;
             var fixedLitTable = false;
 
             if (type) {
-                if (type == 1) {
+                if (type === 1) {
                     distTable = fixedDistTable;
                     litTable = fixedLitTable;
 
                     if (!distTable) {
                         bitLengths = [];
-                        for(i = 32; i--;)
+                        for(i = 32; i--;) {
                             bitLengths[bitLengths.length] = 5;
+                        }
                         distTable = fixedDistTable = _buildHuffTable(bitLengths);
                     }
 
                     if (!litTable) {
                         bitLengths = [];
                         i = 0;
-                        for(; i < 144; i++)
+                        for (; i < 144; i++) {
                             bitLengths[bitLengths.length] = 8;
-                        for(; i < 256; i++)
+                        }
+                        for (; i < 256; i++) {
                             bitLengths[bitLengths.length] = 9;
-                        for(; i < 280; i++)
+                        }
+                        for (; i < 280; i++) {
                             bitLengths[bitLengths.length] = 7;
-                        for(; i < 288; i++)
+                        }
+                        for (; i < 288; i++) {
                             bitLengths[bitLengths.length] = 8;
+                        }
                         litTable = fixedLitTable = _buildHuffTable(bitLengths);
                     }
                 } else {
@@ -446,12 +464,12 @@ if (!('swf2js' in window)){(function(window)
                     var numDistLengths = bitio.readUB(5) + 1;
                     var numCodeLengths = bitio.readUB(4) + 4;
                     var codeLengths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    if (isArrayBuffer)
+                    if (isArrayBuffer) {
                         codeLengths = new Uint8Array(codeLengths);
-
-                    for(i = 0; i < numCodeLengths; i++)
+                    }
+                    for(i = 0; i < numCodeLengths; i++) {
                         codeLengths[ORDER[i]] = bitio.readUB(3);
-
+                    }
                     var codeTable = _buildHuffTable(codeLengths);
                     codeLengths = null;
 
@@ -463,18 +481,21 @@ if (!('swf2js' in window)){(function(window)
                         switch (sym) {
                             case 16:
                                 i = bitio.readUB(2) + 3;
-                                for (; i--; )
+                                for (; i--; ) {
                                     litLengths[litLengths.length] = prevCodeLen;
+                                }
                                 break;
                             case 17:
                                 i = bitio.readUB(3) + 3;
-                                for (; i--; )
+                                for (; i--; ) {
                                     litLengths[litLengths.length] = 0;
+                                }
                                 break;
                             case 18:
                                 i = bitio.readUB(7) + 11;
-                                for (; i--; )
+                                for (; i--; ) {
                                     litLengths[litLengths.length] = 0;
+                                }
                                 break;
                             default:
                                 if(sym <= 15){
@@ -489,66 +510,69 @@ if (!('swf2js' in window)){(function(window)
                 }
 
                 sym = 0;
-                for (; sym != 256; ) {
+                for (; sym !== 256; ) {
                     sym = _decodeSymbol(bitio, litTable);
-
                     if (sym < 256) {
-                        buff[buff.length] = sym;
+                        data[data.length] = sym;
                     } else if (sym > 256) {
                         var mapIdx = sym - 257;
-                        var len = LENS[mapIdx] + bitio.readUB(LEXT[mapIdx]);
+                        length = LENS[mapIdx] + bitio.readUB(LEXT[mapIdx]);
                         var distMap = _decodeSymbol(bitio, distTable);
                         var dist = DISTS[distMap] + bitio.readUB(DEXT[distMap]);
-                        i = buff.length - dist;
-                        for (; len--; )
-                            buff[buff.length] = buff[i++];
+                        i = data.length - dist;
+                        for (; length--; ) {
+                            data[data.length] = data[i++];
+                        }
                     }
                 }
             } else {
                 bitio.bit_offset = 8;
                 bitio.bit_buffer = null;
-                var len = bitio.readNumber(2);
+                length = bitio.readNumber(2);
                 var nlen = bitio.readNumber(2);
-                for (; len--; )
-                    buff[buff.length] = bitio.readNumber(1);
+                for ( ; length--; ) {
+                    data[data.length] = bitio.readNumber(1);
+                }
             }
         }
-        return buff;
+        return data;
     }
 
     /**
-     * @param bitLengths
+     * @param data
      * @returns {{}}
      */
-    function buildHuffTable(bitLengths)
+    function buildHuffTable(data)
     {
-        var numLengths = bitLengths.length;
+        var length = data.length;
         var blCount = [];
-        var maxBits = 0;
-        for (var i = 0; i < numLengths; i++)
-            maxBits = _max(maxBits, bitLengths[i]);
-        maxBits++;
         var nextCode = [];
         var table = {};
         var code = 0;
         var len = 0;
+        var maxBits = 0;
+        for (var i = 0; i < length; i++) {
+            maxBits = _max(maxBits, data[i]);
+        }
+        maxBits++;
 
-        i = numLengths;
-        for (; i--; ) {
-            len = bitLengths[i];
+        i = length;
+        for ( ; i--; ) {
+            len = data[i];
             blCount[len] = (blCount[len] || 0) + (len > 0);
         }
 
         for (i = 1; i < maxBits; i++) {
             len = i - 1;
-            if (!(len in blCount))
+            if (!(len in blCount)) {
                 blCount[len] = 0;
+            }
             code = (code + blCount[len]) << 1;
             nextCode[i] = code;
         }
 
-        for (i = 0; i < numLengths; i++) {
-            len = bitLengths[i];
+        for (i = 0; i < length; i++) {
+            len = data[i];
             if (len) {
                 table[nextCode[len]] = {length: len, symbol: i};
                 nextCode[len]++;
@@ -569,11 +593,13 @@ if (!('swf2js' in window)){(function(window)
         for (;;) {
             code = (code << 1) | bitio.readUB(1);
             len++;
-            if (!(code in table))
+            if (!(code in table)) {
                 continue;
+            }
             var entry = table[code];
-            if (entry.length == len)
+            if (entry.length === len) {
                 return entry.symbol;
+            }
         }
     }
 
@@ -660,10 +686,12 @@ if (!('swf2js' in window)){(function(window)
                     fills1 = [];
                     lines = [];
 
-                    if (record.NumFillBits)
+                    if (record.NumFillBits) {
                         fillStyles = record.FillStyles.fillStyles;
-                    if (record.NumLineBits)
+                    }
+                    if (record.NumLineBits) {
                         lineStyles = record.LineStyles.lineStyles;
+                    }
                 }
 
                 MoveX = AnchorX;
@@ -675,13 +703,15 @@ if (!('swf2js' in window)){(function(window)
                 LineX = MoveX;
                 LineY = MoveY;
 
-                if (record.StateFillStyle0)
+                if (record.StateFillStyle0) {
                     FillStyle0 = record.FillStyle0;
-                if (record.StateFillStyle1)
+                }
+                if (record.StateFillStyle1) {
                     FillStyle1 = record.FillStyle1;
-                if (record.StateLineStyle)
+                }
+                if (record.StateLineStyle) {
                     LineStyle = record.LineStyle;
-
+                }
                 continue;
             }
 
@@ -692,8 +722,9 @@ if (!('swf2js' in window)){(function(window)
             var isCurved = record.isCurved;
             if (FillStyle0) {
                 idx = FillStyle0 - 1;
-                if (!(idx in fills0))
+                if (!(idx in fills0)) {
                     fills0[idx] = [];
+                }
 
                 if (!(depth in fills0[idx])) {
                     fills0[idx][depth] = {
@@ -715,8 +746,9 @@ if (!('swf2js' in window)){(function(window)
 
             if (FillStyle1) {
                 idx = FillStyle1 - 1;
-                if (!(idx in fills1))
+                if (!(idx in fills1)) {
                     fills1[idx] = [];
+                }
 
                 if (!(depth in fills1[idx])) {
                     fills1[idx][depth] = {
@@ -748,9 +780,11 @@ if (!('swf2js' in window)){(function(window)
                 obj = lines[idx];
                 cache = obj.cache;
                 cache[cache.length] = [0, LineX, LineY];
-                cache[cache.length] = (isCurved)
-                    ? [1, ControlX, ControlY, AnchorX, AnchorY]
-                    : [2, AnchorX, AnchorY];
+                var code = [2, AnchorX, AnchorY];
+                if (isCurved) {
+                    code = [1, ControlX, ControlY, AnchorX, AnchorY];
+                }
+                cache[cache.length] = code;
             }
 
             LineX = AnchorX;
@@ -772,15 +806,18 @@ if (!('swf2js' in window)){(function(window)
         fills0 = _this.fillReverse(fills0);
         var length = fills0.length;
         for (var i = 0; i < length; i++) {
-            if (!(i in fills0))
+            if (!(i in fills0)) {
                 continue;
+            }
+
             var fills = fills0[i];
             if (i in fills1) {
                 var fill1 = fills1[i];
                 var fLen = fills.length;
                 for (var depth = 1; depth < fLen; depth++) {
-                    if (!(depth in fills))
+                    if (!(depth in fills)) {
                         continue;
+                    }
                     fill1[fill1.length] = fills[depth];
                 }
             } else {
@@ -798,13 +835,17 @@ if (!('swf2js' in window)){(function(window)
     {
         var length = fills0.length;
         for (var i = 0; i < length; i++) {
-            if (!(i in fills0))
+            if (!(i in fills0)) {
                 continue;
+            }
+
             var fills = fills0[i];
             var fLen = fills.length;
             for (var depth = 1; depth < fLen; depth++) {
-                if (!(depth in fills))
+                if (!(depth in fills)) {
                     continue;
+                }
+
                 var AnchorX = 0;
                 var AnchorY = 0;
                 var obj = fills[depth];
@@ -823,8 +864,9 @@ if (!('swf2js' in window)){(function(window)
                         cacheY = AnchorY;
                     }
                     var array = [];
-                    for (; cLen--;)
+                    for (; cLen--;) {
                         array[array.length] = cache[cLen];
+                    }
                     obj.cache = array;
                 }
 
@@ -840,7 +882,6 @@ if (!('swf2js' in window)){(function(window)
     };
 
     /**
-     * 座標調整
      * @param fills1
      * @param isMorph
      */
@@ -848,42 +889,47 @@ if (!('swf2js' in window)){(function(window)
     {
         var length = fills1.length;
         for (var i = 0; i < length; i++) {
-            if (!(i in fills1))
+            if (!(i in fills1)) {
                 continue;
+            }
+
             var array = [];
             var fills = fills1[i];
             var fLen = fills.length;
             for (var depth = 1; depth < fLen; depth++) {
-                if (!(depth in fills))
+                if (!(depth in fills)) {
                     continue;
+                }
                 array[array.length] = fills[depth];
             }
 
             var adjustment = [];
             if (array.length > 1 && !isMorph) {
                 for (;;) {
-                    if (!array.length)
+                    if (!array.length) {
                         break;
-                    var fill = array.shift();
+                    }
 
-                    if (fill.startX == fill.endX && fill.startY == fill.endY) {
+                    var fill = array.shift();
+                    if (fill.startX === fill.endX && fill.startY === fill.endY) {
                         adjustment[adjustment.length] = fill;
                         continue;
                     }
 
                     var comparison = array.shift();
-                    if (!comparison)
+                    if (!comparison) {
                         break;
+                    }
 
-                    if (comparison.startX == fill.endX && comparison.startY == fill.endY) {
+                    if (comparison.startX === fill.endX && comparison.startY === fill.endY) {
                         fill.endX = comparison.endX;
                         fill.endY = comparison.endY;
                         var cache0 = fill.cache;
                         var cache1 = comparison.cache;
                         var cLen = cache1.length;
-                        for (var cIdx = 0; cIdx < cLen; cIdx++)
+                        for (var cIdx = 0; cIdx < cLen; cIdx++) {
                             cache0[cache0.length] = cache1[cIdx];
-
+                        }
                         array.unshift(fill);
                         continue;
                     }
@@ -906,9 +952,11 @@ if (!('swf2js' in window)){(function(window)
                 cache[cache.length] = [0, data.startX, data.startY];
                 for (var compIdx = 0; compIdx < cacheLength; compIdx++) {
                     var r = caches[compIdx];
-                    cache[cache.length] = (r.isCurved)
-                        ? [1, r.ControlX, r.ControlY, r.AnchorX, r.AnchorY]
-                        : [2, r.AnchorX, r.AnchorY];
+                    var code = [2, r.AnchorX, r.AnchorY];
+                    if (r.isCurved) {
+                        code = [1, r.ControlX, r.ControlY, r.AnchorX, r.AnchorY];
+                    }
+                    cache[cache.length] = code;
                 }
             }
 
@@ -928,8 +976,9 @@ if (!('swf2js' in window)){(function(window)
         var length = array.length;
         var _buildCommand = _this.buildCommand;
         for (var i = 0; i < length; i++) {
-            if (!(i in array))
+            if (!(i in array)) {
                 continue;
+            }
             var data = array[i];
             stack[stack.length] = {
                 obj: data.obj,
@@ -946,23 +995,23 @@ if (!('swf2js' in window)){(function(window)
     VectorToCanvas.prototype.buildCommand = function(cache)
     {
         var length = cache.length;
-        var str = '';
+        var str = "";
         for (var i = 0; i < length; i++) {
             var a = cache[i];
             switch (a[0]) {
                 case 0:
-                    str += 'ctx.moveTo('+a[1]+','+a[2]+');';
+                    str += "ctx.moveTo("+a[1]+","+a[2]+");";
                     break;
                 case 1:
-                    str += 'ctx.quadraticCurveTo('+a[1]+','+a[2]+','+a[3]+','+a[4]+');';
+                    str += "ctx.quadraticCurveTo("+a[1]+","+a[2]+","+a[3]+","+a[4]+");";
                     break;
                 case 2:
-                    str += 'ctx.lineTo('+a[1]+','+a[2]+');';
+                    str += "ctx.lineTo("+a[1]+","+a[2]+");";
                     break;
             }
         }
         cache.str = str;
-        return new Function('ctx', str);
+        return new Func('ctx', str);
     };
     var vtc = new VectorToCanvas();
 
@@ -984,11 +1033,15 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var _destroy = _this.destroy;
         var store = _this.store;
-        for (var cacheKey in store) {
-            var deleteCtx = store[cacheKey];
-            if (!(deleteCtx instanceof CanvasRenderingContext2D))
+        for (var key in store) {
+            if (!store.hasOwnProperty(key)) {
                 continue;
-            _destroy.call(_this, deleteCtx);
+            }
+            var value = store[key];
+            if (!(value instanceof CanvasRenderingContext2D)) {
+                continue;
+            }
+            _destroy.call(_this, value);
         }
         _this.store = {};
         _this.size = 73400320;
@@ -1048,14 +1101,20 @@ if (!('swf2js' in window)){(function(window)
     CacheStore.prototype.generateKey = function(name, id, matrix, cxForm)
     {
         var key = name +"_"+ id;
-        var i;
-        if (matrix != undefined) {
-            for (i in matrix)
+        var i = 0;
+        var length = 0;
+        if (matrix !== undefined) {
+            length = matrix.length;
+            for (i = 0; i < length; i++) {
                 key += "_"+ matrix[i];
+            }
         }
-        if (cxForm != undefined) {
-            for (i in cxForm)
-                key += "_"+ cxForm[i]
+
+        if (cxForm !== undefined) {
+            length = cxForm.length;
+            for (i = 0; i < length; i++) {
+                key += "_"+ cxForm[i];
+            }
         }
         return key;
     };
@@ -1080,8 +1139,9 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var length = data.length;
         var array = _this.createArray(length);
-        for (var key = 0; length--; key++)
+        for (var key = 0; length--; key++) {
             array[key] = data.charCodeAt(key) & 0xff;
+        }
         _this.data = array;
     };
 
@@ -1108,7 +1168,7 @@ if (!('swf2js' in window)){(function(window)
     BitIO.prototype.getHeaderSignature = function()
     {
         var _this = this;
-        var str = '';
+        var str = "";
         var count = 3;
         for (; count; ) {
             var code = _this.getUI8();
@@ -1117,6 +1177,7 @@ if (!('swf2js' in window)){(function(window)
                 case 96:
                 case 127:
                     continue;
+                default:
                     break;
             }
             str += _fromCharCode(code);
@@ -1157,8 +1218,9 @@ if (!('swf2js' in window)){(function(window)
         var key = 0;
         var data = _this.data;
         var limit = length;
-        for (; limit--; )
+        for (; limit--; ) {
             array[key++] = data[_this.byte_offset++];
+        }
         return array;
     };
 
@@ -1175,45 +1237,45 @@ if (!('swf2js' in window)){(function(window)
         _this.byteAlign();
         var bo = _this.byte_offset;
         var offset = 0;
-        if (value == null) {
+        if (value === null) {
             offset = -1;
         } else {
             var length = data.length;
             for (;;) {
                 var val = data[bo + offset];
                 offset++;
-                if (val == 0 || (bo + offset) >= length)
+                if (val === 0 || (bo + offset) >= length) {
                     break;
+                }
             }
         }
 
-        var n = (offset == -1) ? data.length - bo : offset;
+        var n = (offset === -1) ? data.length - bo : offset;
         var array = [];
-        var ret = '';
+        var ret = "";
         var _join = Array.prototype.join;
         var i = 0;
-        if (value != null) {
+        if (value !== null) {
             for (i = 0; i < n; i++) {
                 var code = data[bo + i];
-                if (code == 10 || code == 13) {
-                    array[array.length] = '@LFCR';
+                if (code === 10 || code === 13) {
+                    array[array.length] = "@LFCR";
                 } else if (code < 32) {
                     continue;
                 } else {
-                    array[array.length] = '%' + code.toString(16);
+                    array[array.length] = "%" + code.toString(16);
                 }
             }
 
-            var str = _join.call(array, '');
-            ret = (isJis == false)
-                ? _decodeURIComponent(_escape(_unescape(str)))
-                : decodeToShiftJis(str);
-
-            if (ret.length > 5 && ret.substr(-5) == '@LFCR')
+            var str = _join.call(array, "");
+            ret = (isJis === false) ? _decodeURIComponent(_escape(_unescape(str))) : decodeToShiftJis(str);
+            if (ret.length > 5 && ret.substr(-5) === "@LFCR") {
                 ret = ret.slice(0, -5);
+            }
         } else {
-            for (i = 0; i < n; i++)
+            for (i = 0; i < n; i++) {
                 ret += _fromCharCode(data[bo + i]);
+            }
         }
         _this.byte_offset = bo + n;
         return ret;
@@ -1329,8 +1391,9 @@ if (!('swf2js' in window)){(function(window)
     {
         var data = this.getData(2);
         var float = 0;
-        for (var i = 2; i--;)
+        for (var i = 2; i--;) {
             float |= data[i] << (i * 8);
+        }
         return float;
     };
 
@@ -1341,14 +1404,17 @@ if (!('swf2js' in window)){(function(window)
     {
         var data = this.getData(4);
         var rv = 0;
-        for (var i = 4; i--;)
+        for (var i = 4; i--;) {
             rv |= data[i] << (i * 8);
+        }
         var sign = rv & 0x80000000;
         var exp  = (rv >> 23) & 0xff;
         var fraction = rv & 0x7fffff;
-        return (!rv || rv == 0x80000000)
-            ? 0
-            : (sign ? -1 : 1) * (fraction | 0x800000) *  _pow(2, (exp - 127 - 23));
+        if (!rv || rv === 0x80000000) {
+            return 0;
+        }
+
+        return (sign ? -1 : 1) * (fraction | 0x800000) *  _pow(2, (exp - 127 - 23));
     };
 
     /**
@@ -1362,12 +1428,9 @@ if (!('swf2js' in window)){(function(window)
         var sign = upperBits >>> 31 & 0x1;
         var exp = upperBits >>> 20 & 0x7FF;
         var upperFraction = upperBits & 0xFFFFF;
-        var lowerFraction = lowerBits;
-        return (!upperBits && !lowerBits)
-            ? 0
-            : ((sign == 0) ? 1 : -1)
-            * (upperFraction / _pow(2, 20) + lowerFraction / _pow(2, 52) + 1)
-                * _pow(2, exp - 1023);
+        return (!upperBits && !lowerBits) ? 0 : ((sign === 0) ? 1 : -1) *
+            (upperFraction / _pow(2, 20) + lowerBits / _pow(2, 52) + 1) *
+                _pow(2, exp - 1023);
     };
 
     /**
@@ -1387,8 +1450,9 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var value = _this.toUI16(data);
-        if (value < 0x8000)
+        if (value < 0x8000) {
             return value;
+        }
         return value - 0x10000;
     };
 
@@ -1426,8 +1490,9 @@ if (!('swf2js' in window)){(function(window)
         for (var i = 0; i < 5; i++) {
             var num = data[_this.byte_offset++];
             value = value | ((num & 0x7f) << (7 * i));
-            if (!(num & 0x80))
+            if (!(num & 0x80)) {
                 break;
+            }
         }
         return value;
     };
@@ -1441,7 +1506,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var value = 0;
         for (var i = 0; i < length; i++) {
-            if (_this.bit_offset == 8) {
+            if (_this.bit_offset === 8) {
                 _this.bit_buffer = _this.readNumber(1);
                 _this.bit_offset = 0;
             }
@@ -1459,8 +1524,9 @@ if (!('swf2js' in window)){(function(window)
         var value = 0;
         var o = _this.byte_offset;
         var i = o + n;
-        for(; i > o;)
+        for(; i > o;) {
             value = (value << 8) | _this.data[--i];
+        }
         _this.byte_offset += n;
         return value;
     };
@@ -1476,15 +1542,17 @@ if (!('swf2js' in window)){(function(window)
         var data = _this.getData(bo);
         var deCompress = unzip(_this.data, true);
         var array = _this.createArray(length);
+
         _this.data = null;
 
         var dataLength = data.length;
-        for (var i = 0; i < dataLength; i++)
+        for (var i = 0; i < dataLength; i++) {
             array[key++] = data[i];
-
+        }
         var compLength = deCompress.length;
-        for (i = 0; i < compLength; i++)
+        for (i = 0; i < compLength; i++) {
             array[key++] = deCompress[i];
+        }
 
         _this.data = array;
         _this.byte_offset = bo;
@@ -1497,10 +1565,11 @@ if (!('swf2js' in window)){(function(window)
      */
     var SwfTag = function(stage, bitio)
     {
-        this.stage = stage;
-        this.bitio = bitio;
-        this.currentPosition = {x:0, y:0};
-        this.jpegTables = null;
+        var _this = this;
+        _this.stage = stage;
+        _this.bitio = bitio;
+        _this.currentPosition = {x:0, y:0};
+        _this.jpegTables = null;
     };
 
     /**
@@ -1525,8 +1594,9 @@ if (!('swf2js' in window)){(function(window)
         var _showFrame = _this.showFrame;
         var originTags = [];
         for (var frame = 1; frame < length; frame++) {
-            if (!(frame in tags))
+            if (!(frame in tags)) {
                 continue;
+            }
             _showFrame.call(_this, tags[frame], parent, originTags);
         }
     };
@@ -1542,20 +1612,23 @@ if (!('swf2js' in window)){(function(window)
         var _buildTag = _this.buildTag;
         var newDepth = [];
         var length = 0;
+        var i = 0;
+        var tag;
         var frame = obj.frame;
 
-        if (!(frame in originTags))
+        if (!(frame in originTags)) {
             originTags[frame] = [];
-
+        }
         mc.setTotalFrames(_max(mc.getTotalFrames(), frame));
 
         // add ActionScript
         var actions = obj.actionScript;
         length = actions.length;
         if (length) {
-            for (var i = 0; i < length; i++) {
-                if (!(i in actions))
+            for (i = 0; i < length; i++) {
+                if (!(i in actions)) {
                     continue;
+                }
                 mc.setActions(frame, actions[i]);
             }
         }
@@ -1565,8 +1638,9 @@ if (!('swf2js' in window)){(function(window)
         length = labels.length;
         if (length) {
             for (; length--;) {
-                if (!(length in labels))
+                if (!(length in labels)) {
                     continue;
+                }
                 var label = labels[length];
                 mc.addLabel(label.frame, label.name);
             }
@@ -1577,8 +1651,9 @@ if (!('swf2js' in window)){(function(window)
         length = sounds.length;
         if (length) {
             for (; length--;) {
-                if (!(length in sounds))
+                if (!(length in sounds)) {
                     continue;
+                }
                 mc.addSound(frame, sounds[length]);
             }
         }
@@ -1586,10 +1661,11 @@ if (!('swf2js' in window)){(function(window)
         var cTags = obj.cTags;
         length = cTags.length;
         if (length) {
-            for (var i = 0; i < length; i++) {
-                if (!(i in cTags))
+            for (i = 0; i < length; i++) {
+                if (!(i in cTags)) {
                     continue;
-                var tag = cTags[i];
+                }
+                tag = cTags[i];
                 newDepth[tag.Depth] = true;
                 _buildTag.call(_this, frame, tag, mc, originTags);
             }
@@ -1601,8 +1677,9 @@ if (!('swf2js' in window)){(function(window)
         if (length) {
             mc.setRemoveTag(frame, tags);
             for (; length--;) {
-                if (!(length in tags))
+                if (!(length in tags)) {
                     continue;
+                }
                 var rTag = tags[length];
                 newDepth[rTag.Depth] = true;
             }
@@ -1620,15 +1697,17 @@ if (!('swf2js' in window)){(function(window)
 
                 length = prevTags.length;
                 for (; length--;) {
-                    if (!(length in prevTags) || length in newDepth)
+                    if (!(length in prevTags) || length in newDepth) {
                         continue;
+                    }
 
                     addTags[frame][length] = prevTags[length];
-                    var tag = prevTags[length];
+                    tag = prevTags[length];
                     if (tag instanceof MovieClip) {
                         var prevController = controller[prevFrame];
-                        if (!(frame in controller))
+                        if (!(frame in controller)) {
                             controller[frame] = [];
+                        }
                         controller[frame][length] = prevController[length];
                     }
                     originTags[frame][length] = originTags[prevFrame][length];
@@ -1655,9 +1734,9 @@ if (!('swf2js' in window)){(function(window)
         var isCopy = true;
         if (tag.PlaceFlagMove) {
             var oTag = originTags[frame - 1][tag.Depth];
-            if (oTag != undefined) {
+            if (oTag !== undefined) {
                 if (tag.PlaceFlagHasCharacter) {
-                    if (tag.CharacterId != oTag.CharacterId) {
+                    if (tag.CharacterId !== oTag.CharacterId) {
                         isCopy = false;
                     }
                 } else {
@@ -1665,30 +1744,22 @@ if (!('swf2js' in window)){(function(window)
                     tag.CharacterId = oTag.CharacterId;
                 }
 
-                if (!tag.PlaceFlagHasMatrix
-                    && oTag.PlaceFlagHasMatrix
-                ) {
+                if (!tag.PlaceFlagHasMatrix && oTag.PlaceFlagHasMatrix) {
                     tag.PlaceFlagHasMatrix = oTag.PlaceFlagHasMatrix;
                     tag.Matrix = oTag.Matrix;
                 }
 
-                if (!tag.PlaceFlagHasColorTransform
-                    && oTag.PlaceFlagHasColorTransform
-                ) {
+                if (!tag.PlaceFlagHasColorTransform && oTag.PlaceFlagHasColorTransform) {
                     tag.PlaceFlagHasColorTransform = oTag.PlaceFlagHasColorTransform;
                     tag.ColorTransform = oTag.ColorTransform;
                 }
 
-                if (!tag.PlaceFlagHasClipDepth
-                    && oTag.PlaceFlagHasClipDepth
-                ) {
+                if (!tag.PlaceFlagHasClipDepth && oTag.PlaceFlagHasClipDepth) {
                     tag.PlaceFlagHasClipDepth = oTag.PlaceFlagHasClipDepth;
                     tag.ClipDepth = oTag.ClipDepth;
                 }
 
-                if (!tag.PlaceFlagHasClipActions
-                    && oTag.PlaceFlagHasClipActions
-                ) {
+                if (!tag.PlaceFlagHasClipActions && oTag.PlaceFlagHasClipActions) {
                     tag.PlaceFlagHasClipActions = oTag.PlaceFlagHasClipActions;
                     tag.ClipActionRecords = oTag.ClipActionRecords;
                 }
@@ -1698,9 +1769,7 @@ if (!('swf2js' in window)){(function(window)
                     tag.Ratio = frame - 1;
                 }
 
-                if (!tag.PlaceFlagHasFilterList
-                    && oTag.PlaceFlagHasFilterList
-                ) {
+                if (!tag.PlaceFlagHasFilterList && oTag.PlaceFlagHasFilterList) {
                     tag.PlaceFlagHasFilterList = oTag.PlaceFlagHasFilterList;
                     tag.SurfaceFilterList = oTag.SurfaceFilterList;
                 }
@@ -1709,8 +1778,9 @@ if (!('swf2js' in window)){(function(window)
 
         originTags[frame][tag.Depth] = _clone(tag);
         var buildObject = _this.buildObject(tag, parent, isCopy, frame);
-        if (buildObject)
+        if (buildObject) {
             addTags[frame][tag.Depth] = buildObject;
+        }
     };
 
     /**
@@ -1730,15 +1800,16 @@ if (!('swf2js' in window)){(function(window)
 
         var obj = {};
         if (char instanceof Array) {
-            obj = (tag.PlaceFlagMove && copy)
-                ? parent.addTags[frame - 1][tag.Depth]
-                : _this.buildMovieClip(tag, char, parent);
+            obj = (tag.PlaceFlagMove && copy) ?
+                parent.addTags[frame - 1][tag.Depth] :
+                _this.buildMovieClip(tag, char, parent);
 
-            if (obj.isStatic && obj.getTotalFrames() > 1)
+            if (obj.isStatic && obj.getTotalFrames() > 1) {
                 obj.isStatic = false;
-
-            if (parent.isStatic)
+            }
+            if (parent.isStatic) {
                 parent.isStatic = _min(obj.isStatic, parent.isStatic);
+            }
         } else {
             var tagType = char.tagType;
             switch (tagType) {
@@ -1766,7 +1837,6 @@ if (!('swf2js' in window)){(function(window)
                     break;
                 default:
                     return 0;
-                    break;
             }
         }
 
@@ -1840,19 +1910,29 @@ if (!('swf2js' in window)){(function(window)
             var ClipActionRecords = tag.ClipActionRecords;
             var rLength = ClipActionRecords.length;
             var eventArray = [];
+            var eventName;
             for (var i = 0; i < rLength; i++) {
                 var actionRecord = ClipActionRecords[i];
                 var eventFlag = actionRecord.EventFlags;
-                for (var eventName in eventFlag) {
-                    if (eventFlag[eventName] == 0)
+                for (eventName in eventFlag) {
+                    if (!eventFlag.hasOwnProperty(eventName)) {
                         continue;
-                    if (!(eventName in eventArray))
+                    }
+                    if (!eventFlag[eventName]) {
+                        continue;
+                    }
+                    if (!(eventName in eventArray)) {
                         eventArray[eventName] = [];
+                    }
                     eventArray[eventName].push(actionRecord.Actions);
                 }
             }
-            for (eventName in eventArray)
+            for (eventName in eventArray) {
+                if (!eventArray.hasOwnProperty(eventName)) {
+                    continue;
+                }
                 mc.clipEvent[eventName] = eventArray[eventName];
+            }
         }
 
         // Filter
@@ -1933,7 +2013,7 @@ if (!('swf2js' in window)){(function(window)
 
         if (fontData) {
             obj.bold = fontData.FontFlagsBold;
-            var font = textField.getVariable('font');
+            var font = textField.getVariable("font");
             obj.font = "'"+ fontData.FontName +"', "+ font;
             obj.italic = fontData.FontFlagsItalic;
         }
@@ -1941,13 +2021,13 @@ if (!('swf2js' in window)){(function(window)
         if (data.HasLayout) {
             switch (data.Align) {
                 case 1:
-                    obj.align = 'right';
+                    obj.align = "right";
                     break;
                 case 2:
-                    obj.align = 'center';
+                    obj.align = "center";
                     break;
                 case 3:
-                    obj.align = 'justify';
+                    obj.align = "justify";
                     break;
             }
             obj.leftMargin = data.LeftMargin;
@@ -1962,8 +2042,12 @@ if (!('swf2js' in window)){(function(window)
         obj.underline = 0;
         obj.url = null;
 
-        for (var name in obj)
+        for (var name in obj) {
+            if (!obj.hasOwnProperty(name)) {
+                continue;
+            }
             textField.setProperty(name, obj[name]);
+        }
 
         return textField;
     };
@@ -1995,24 +2079,29 @@ if (!('swf2js' in window)){(function(window)
         var isZoneTable = false;
         for (var i = 0; i < length; i++) {
             var record = records[i];
-            if ('FontId' in record) {
+            if ("FontId" in record) {
                 var fontId = record.FontId;
                 var fontData = stage.getCharacter(fontId);
                 ShapeTable = fontData.GlyphShapeTable;
                 isZoneTable = false;
-                if (fontData.ZoneTable)
+                if (fontData.ZoneTable) {
                     isZoneTable = true;
+                }
             }
-            if ('XOffset' in record)
+            if ("XOffset" in record) {
                 offsetX = record.XOffset;
-            if ('YOffset' in record)
+            }
+            if ("YOffset" in record) {
                 offsetY = record.YOffset;
-            if ('TextColor' in record)
+            }
+            if ("TextColor" in record) {
                 color = record.TextColor;
-            if ('TextHeight' in record) {
+            }
+            if ("TextHeight" in record) {
                 textHeight = record.TextHeight;
-                if (isZoneTable)
+                if (isZoneTable) {
                     textHeight /= 20;
+                }
             }
 
             var entries = record.GlyphEntries;
@@ -2065,11 +2154,12 @@ if (!('swf2js' in window)){(function(window)
         var button = new Button();
         button.setParent(parent);
         button.setStage(_this.stage);
-        if ('actions' in character)
+        if ("actions" in character) {
             button.setActions(character.actions);
-        if (tag.PlaceFlagHasName)
+        }
+        if (tag.PlaceFlagHasName) {
             button.setName(tag.Name);
-
+        }
         var down = button.down;
         if (character.ButtonStateDownSoundId) {
             down.soundId = character.ButtonStateDownSoundId;
@@ -2095,26 +2185,32 @@ if (!('swf2js' in window)){(function(window)
         }
 
         for (var depth = 1; depth < length; depth++) {
-            if (!(depth in characters))
+            if (!(depth in characters)) {
                 continue;
+            }
 
             var tags = characters[depth];
             var tLen = tags.length;
             for (var idx = 0; idx < tLen; idx++) {
-                if (!(idx in tags))
+                if (!(idx in tags)) {
                     continue;
+                }
+
                 var bTag = tags[idx];
                 var obj = _this.buildObject(bTag, parent, false, 1);
                 var Depth = bTag.Depth;
-
-                if (bTag.ButtonStateDown)
+                if (bTag.ButtonStateDown) {
                     down.addTag(Depth, obj, bTag);
-                if (bTag.ButtonStateHitTest)
+                }
+                if (bTag.ButtonStateHitTest) {
                     hitTest.addTag(Depth, obj, bTag);
-                if (bTag.ButtonStateOver)
+                }
+                if (bTag.ButtonStateOver) {
                     over.addTag(Depth, obj, bTag);
-                if (bTag.ButtonStateUp)
+                }
+                if (bTag.ButtonStateUp) {
                     up.addTag(Depth, obj, bTag);
+                }
             }
         }
 
@@ -2164,15 +2260,16 @@ if (!('swf2js' in window)){(function(window)
 
         for (; bitio.byte_offset < dataLength; ) {
             var tagStartOffset = bitio.byte_offset;
-            if (tagStartOffset + 2 > dataLength)
+            if (tagStartOffset + 2 > dataLength) {
                 break;
+            }
 
             var tagLength = bitio.getUI16();
             tagType = tagLength >> 6;
 
             // long形式
             var length = tagLength & 0x3f;
-            if (length == 0x3f) {
+            if (length === 0x3f) {
                 if (tagStartOffset + 6 > dataLength) {
                     bitio.byte_offset = tagStartOffset;
                     bitio.bit_offset = 0;
@@ -2182,7 +2279,7 @@ if (!('swf2js' in window)){(function(window)
             }
 
             var tagDataStartOffset = bitio.byte_offset;
-            if (tagType == 1) {
+            if (tagType === 1) {
                 frame++;
                 if (dataLength > tagDataStartOffset + 2) {
                     tags[frame] = _generateDefaultTagObj.call(_this, frame, characterId);
@@ -2192,7 +2289,7 @@ if (!('swf2js' in window)){(function(window)
             var tag = _parseTag.call(_this, tagType, length);
 
             var o = bitio.byte_offset - tagDataStartOffset;
-            if (o != length) {
+            if (o !== length) {
                 if (o < length) {
                     var eat = (length - o);
                     if (eat > 0) {
@@ -2201,8 +2298,9 @@ if (!('swf2js' in window)){(function(window)
                 }
             }
 
-            if (tag != null)
+            if (tag) {
                 tags = _addTag.call(_this, tagType, tags, tag, frame);
+            }
 
             bitio.bit_offset = 0;
         }
@@ -2221,6 +2319,7 @@ if (!('swf2js' in window)){(function(window)
         var obj = null;
         var bitio = _this.bitio;
         var stage = _this.stage;
+        var Reserved;
 
         switch (tagType) {
             case 0: // End
@@ -2232,7 +2331,7 @@ if (!('swf2js' in window)){(function(window)
             case 32: // DefineShape3
             case 83: // DefineShape4
                 if (length < 10) {
-                    bitio.byte_offset + length;
+                    bitio.byte_offset += length;
                 } else {
                     _this.parseDefineShape(tagType);
                 }
@@ -2316,11 +2415,11 @@ if (!('swf2js' in window)){(function(window)
                 bitio.byteAlign();
                 break;
             case 64: // EnableDebugger2
-                var Reserved = bitio.getUI16();
-                var Password = bitio.getDataUntil('\0');
+                Reserved = bitio.getUI16();
+                var Password = bitio.getDataUntil("\0");
                 break;
             case 69: // FileAttributes
-                var Reserved = bitio.getUIBit();
+                Reserved = bitio.getUIBit();
                 var UseDirectBlit = bitio.getUIBit();
                 var UseGPU = bitio.getUIBit();
                 var HasMetadata = bitio.getUIBit();
@@ -2330,7 +2429,7 @@ if (!('swf2js' in window)){(function(window)
                 var Reserved3 = bitio.getUIBits(24);
                 break;
             case 77: // MetaData
-                var MetaData = bitio.getDataUntil('\0');
+                var MetaData = bitio.getDataUntil("\0");
                 break;
             case 86: // DefineSceneAndFrameLabelData
                 obj = _this.parseDefineSceneAndFrameLabelData();
@@ -2371,7 +2470,7 @@ if (!('swf2js' in window)){(function(window)
             case 61: // VideoFrame
                 _this.parseVideoFrame(tagType, length);
                 break;
-            // TODO 未実装
+            // TODO Tag
             case 3:  // FreeCharacter
             case 16: // StopSound
             case 23: // DefineButtonCxform
@@ -2398,7 +2497,7 @@ if (!('swf2js' in window)){(function(window)
             case 87: // DefineBinaryData
             case 91: // DefineFont4
             case 93: // EnableTelemetry
-                console.log('[base]未対応tagType -> ' + tagType);
+                console.log("[base]未対応tagType -> " + tagType);
                 break;
             case 27: // 27 (invalid)
             case 30: // 30 (invalid)
@@ -2468,7 +2567,7 @@ if (!('swf2js' in window)){(function(window)
         var characterId = bitio.getUI16();
         var shapeBounds = _this.rect();
 
-        if (tagType == 83) {
+        if (tagType === 83) {
             var EdgeBounds = _this.rect();
             var Reserved = bitio.getUIBits(5);
             var UsesFillWindingRule = bitio.getUIBit();
@@ -2505,13 +2604,15 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var bitio = _this.bitio;
+        var fillStyles;
+        var lineStyles;
 
-        if (tagType == 46 || tagType == 84) {
-            var fillStyles = {fillStyleCount:0, fillStyles:[]};
-            var lineStyles = {lineStyleCount:0, lineStyles:[]};
+        if (tagType === 46 || tagType === 84) {
+            fillStyles = {fillStyleCount:0, fillStyles:[]};
+            lineStyles = {lineStyleCount:0, lineStyles:[]};
         } else {
-            var fillStyles = _this.fillStyleArray(tagType);
-            var lineStyles = _this.lineStyleArray(tagType);
+            fillStyles = _this.fillStyleArray(tagType);
+            lineStyles = _this.lineStyleArray(tagType);
         }
 
         var numBits = bitio.getUI8();
@@ -2538,7 +2639,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var bitio = _this.bitio;
         var fillStyleCount = bitio.getUI8();
-        if ((tagType > 2) && (fillStyleCount == 0xff)) {
+        if ((tagType > 2) && (fillStyleCount === 0xff)) {
             fillStyleCount = bitio.getUI16();
         }
 
@@ -2567,9 +2668,9 @@ if (!('swf2js' in window)){(function(window)
 
         switch (bitType) {
             case 0x00: // 単色塗り
-                if (tagType == 32 || tagType == 83) {
+                if (tagType === 32 || tagType === 83) {
                     obj.Color = _this.rgba();
-                } else if (tagType == 46 || tagType == 84) {
+                } else if (tagType === 46 || tagType === 84) {
                     obj.StartColor = _this.rgba();
                     obj.EndColor = _this.rgba();
                 } else {
@@ -2578,7 +2679,7 @@ if (!('swf2js' in window)){(function(window)
                 break;
             case 0x10: // 線形グラデーション塗り
             case 0x12: // 円形グラデーション塗り
-                if (tagType == 46 || tagType == 84) {
+                if (tagType === 46 || tagType === 84) {
                     obj.startGradientMatrix = _this.matrix();
                     obj.endGradientMatrix = _this.matrix();
                     obj.gradient = _this.gradient(tagType);
@@ -2597,7 +2698,7 @@ if (!('swf2js' in window)){(function(window)
             case 0x42: // スムーズでない繰り返しビットマップ塗り
             case 0x43: // スムーズでないクリッピングビットマップ塗り
                 obj.bitmapId = bitio.getUI16();
-                if (tagType == 46 || tagType == 84) {
+                if (tagType === 46 || tagType === 84) {
                     obj.startBitmapMatrix = _this.matrix();
                     obj.endBitmapMatrix = _this.matrix();
                 } else {
@@ -2674,23 +2775,25 @@ if (!('swf2js' in window)){(function(window)
      */
     SwfTag.prototype.gradient = function(tagType)
     {
-        var bitio = this.bitio;
-        bitio.byteAlign();
         var _this = this;
-        if (tagType == 46 || tagType == 84) {
-            var SpreadMode = 0;
-            var InterpolationMode = 0;
-            var NumGradients = bitio.getUI8();
+        var SpreadMode = 0;
+        var InterpolationMode = 0;
+        var NumGradients;
+        var bitio = this.bitio;
+
+        bitio.byteAlign();
+
+        if (tagType === 46 || tagType === 84) {
+            NumGradients = bitio.getUI8();
         } else {
-            var SpreadMode = bitio.getUIBits(2);
-            var InterpolationMode = bitio.getUIBits(2);
-            var NumGradients = bitio.getUIBits(4);
+            SpreadMode = bitio.getUIBits(2);
+            InterpolationMode = bitio.getUIBits(2);
+            NumGradients = bitio.getUIBits(4);
         }
 
         var GradientRecords = [];
         for (var i = NumGradients; i--;) {
-            GradientRecords[GradientRecords.length] =
-                _this.gradientRecord(tagType);
+            GradientRecords[GradientRecords.length] = _this.gradientRecord(tagType);
         }
 
         return {
@@ -2708,7 +2811,7 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var bitio = _this.bitio;
-        if (tagType == 46 || tagType == 84) {
+        if (tagType === 46 || tagType === 84) {
             return {
                 StartRatio: bitio.getUI8() / 255,
                 StartColor: _this.rgba(),
@@ -2759,7 +2862,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var bitio = _this.bitio;
         var lineStyleCount = bitio.getUI8();
-        if ((tagType > 2) && (lineStyleCount == 0xff)) {
+        if ((tagType > 2) && (lineStyleCount === 0xff)) {
             lineStyleCount = bitio.getUI16();
         }
 
@@ -2782,16 +2885,18 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var bitio = _this.bitio;
+        var Reserved;
         var obj = {};
+
         obj.fillStyleType = 0;
-        if (tagType == 46) {
+        if (tagType === 46) {
             obj = {
                 StartWidth: bitio.getUI16(),
                 EndWidth: bitio.getUI16(),
                 StartColor: _this.rgba(),
                 EndColor: _this.rgba()
             };
-        } else if (tagType == 84) {
+        } else if (tagType === 84) {
             obj.StartWidth = bitio.getUI16();
             obj.EndWidth = bitio.getUI16();
 
@@ -2801,11 +2906,11 @@ if (!('swf2js' in window)){(function(window)
             obj.NoHScaleFlag = bitio.getUIBit();
             obj.NoVScaleFlag = bitio.getUIBit();
             obj.PixelHintingFlag = bitio.getUIBit();
-            var Reserved = bitio.getUIBits(5);
+            Reserved = bitio.getUIBits(5);
             obj.NoClose = bitio.getUIBit();
             obj.EndCapStyle = bitio.getUIBits(2);
 
-            if (obj.JoinStyle == 2) {
+            if (obj.JoinStyle === 2) {
                 obj.MiterLimitFactor = bitio.getUI16();
             }
 
@@ -2817,7 +2922,7 @@ if (!('swf2js' in window)){(function(window)
             }
         } else {
             obj.Width = bitio.getUI16();
-            if (tagType == 83) {
+            if (tagType === 83) {
                 // DefineShape4
                 obj.StartCapStyle = bitio.getUIBits(2);
                 obj.JoinStyle = bitio.getUIBits(2);
@@ -2825,11 +2930,11 @@ if (!('swf2js' in window)){(function(window)
                 obj.NoHScaleFlag = bitio.getUIBit();
                 obj.NoVScaleFlag = bitio.getUIBit();
                 obj.PixelHintingFlag = bitio.getUIBit();
-                var Reserved = bitio.getUIBits(5);
+                Reserved = bitio.getUIBits(5);
                 obj.NoClose = bitio.getUIBit();
                 obj.EndCapStyle = bitio.getUIBits(2);
 
-                if (obj.JoinStyle == 2) {
+                if (obj.JoinStyle === 2) {
                     obj.MiterLimitFactor = bitio.getUI16();
                 }
 
@@ -2838,7 +2943,7 @@ if (!('swf2js' in window)){(function(window)
                 } else {
                     obj.Color = _this.rgba();
                 }
-            } else if (tagType == 32) {
+            } else if (tagType === 32) {
                 // DefineShape3
                 obj.Color = _this.rgba();
             } else {
@@ -2868,19 +2973,14 @@ if (!('swf2js' in window)){(function(window)
         for (;;) {
             var first6Bits = bitio.getUIBits(6);
             var shape = 0;
-
             if (first6Bits & 0x20) {
-                // Edge
                 var numBits = first6Bits & 0x0f;
                 if (first6Bits & 0x10) {
-                    // StraigtEdge (11XXXX)
                     shape = _straightEdgeRecord.call(_this, tagType, numBits);
                 } else {
-                    // CurvedEdge (10XXXX)
                     shape = _curvedEdgeRecord.call(_this, tagType, numBits);
                 }
             } else if (first6Bits) {
-                // ChangeStyle (0XXXXX)
                 shape =
                     _styleChangeRecord.call(_this, tagType, first6Bits, currentNumBits);
             }
@@ -2922,7 +3022,7 @@ if (!('swf2js' in window)){(function(window)
 
         var AnchorX = deltaX;
         var AnchorY = deltaY;
-        if (tagType != 46 && tagType != 84) {
+        if (tagType !== 46 && tagType !== 84) {
             AnchorX = _this.currentPosition.x + deltaX;
             AnchorY = _this.currentPosition.y + deltaY;
             _this.currentPosition.x = AnchorX;
@@ -2957,7 +3057,7 @@ if (!('swf2js' in window)){(function(window)
         var ControlY = controlDeltaY;
         var AnchorX = anchorDeltaX;
         var AnchorY = anchorDeltaY;
-        if (tagType != 46 && tagType != 84) {
+        if (tagType !== 46 && tagType !== 84) {
             ControlX  = _this.currentPosition.x + controlDeltaX;
             ControlY = _this.currentPosition.y + controlDeltaY;
             AnchorX = ControlX + anchorDeltaX;
@@ -3059,9 +3159,9 @@ if (!('swf2js' in window)){(function(window)
         var width = bitio.getUI16();
         var height = bitio.getUI16();
 
-        var isAlpha = (tagType == 36);
+        var isAlpha = (tagType === 36);
         var colorTableSize = 0;
-        if (format == 3) {
+        if (format === 3) {
             colorTableSize = bitio.getUI8() + 1;
         }
 
@@ -3082,7 +3182,7 @@ if (!('swf2js' in window)){(function(window)
         var pxIdx = 0;
         var x = width;
         var y = height;
-        if (format == 5 && !isAlpha) {
+        if (format === 5 && !isAlpha) {
             idx = 0;
             pxIdx = 0;
             for (y = height; y--;) {
@@ -3097,16 +3197,14 @@ if (!('swf2js' in window)){(function(window)
         } else {
             var bpp = (isAlpha) ? 4 : 3;
             var cmIdx = colorTableSize * bpp;
-            var pad = (colorTableSize)
-                ? ((width + 3) & ~3) - width
-                : 0;
+            var pad = 0;
+            if (colorTableSize) {
+                pad = ((width + 3) & ~3) - width;
+            }
 
             for (y = height; y--;) {
                 for (x = width; x--;) {
-                    idx = (colorTableSize)
-                        ? data[cmIdx++] * bpp
-                        : cmIdx++ * bpp;
-
+                    idx = (colorTableSize) ? data[cmIdx++] * bpp : cmIdx++ * bpp;
                     if(!isAlpha){
                         pxData[pxIdx++] = data[idx++];
                         pxData[pxIdx++] = data[idx++];
@@ -3114,10 +3212,7 @@ if (!('swf2js' in window)){(function(window)
                         idx++;
                         pxData[pxIdx++] = 255;
                     } else {
-                        var alpha = (format == 3)
-                            ? data[idx+3]
-                            : data[idx++];
-
+                        var alpha = (format === 3) ? data[idx+3] : data[idx++];
                         if (!isAlphaBug) {
                             pxData[pxIdx++] = data[idx++] * 255 / alpha;
                             pxData[pxIdx++] = data[idx++] * 255 / alpha;
@@ -3129,7 +3224,7 @@ if (!('swf2js' in window)){(function(window)
                         }
                         pxData[pxIdx++] = alpha;
 
-                        if (format == 3) {
+                        if (format === 3) {
                             idx++;
                         }
                     }
@@ -3186,17 +3281,17 @@ if (!('swf2js' in window)){(function(window)
         var sub = bitio.byte_offset - startOffset;
 
         var ImageDataLen = length - sub;
-        if (tagType == 35 || tagType == 90) {
+        if (tagType === 35 || tagType === 90) {
             ImageDataLen = bitio.getUI32();
         }
 
-        if (tagType == 90) {
+        if (tagType === 90) {
             var DeblockParam = bitio.getUI16();
         }
 
         var JPEGData = bitio.getData(ImageDataLen);
         var BitmapAlphaData = false;
-        if (tagType == 35 || tagType == 90) {
+        if (tagType === 35 || tagType === 90) {
             BitmapAlphaData =
                 bitio.getData(length - sub - ImageDataLen);
         }
@@ -3238,7 +3333,7 @@ if (!('swf2js' in window)){(function(window)
             stage.imgUnLoadCount--;
         };
 
-        if (jpegTables != null && jpegTables.length > 4) {
+        if (jpegTables !== null && jpegTables.length > 4) {
             var margeData = [];
             var len = jpegTables.length - 2;
             for (var idx = 0; idx < len; idx++) {
@@ -3253,9 +3348,10 @@ if (!('swf2js' in window)){(function(window)
             JPEGData = margeData;
         }
 
-        image.src = "data:image/jpeg;base64,"
-        + _this.base64encode(_this.parseJpegData(JPEGData));
+        image.src = "data:image/jpeg;base64," +
+            _this.base64encode(_this.parseJpegData(JPEGData));
 
+        // for android
         _setTimeout(function() {}, 0);
     };
 
@@ -3271,26 +3367,23 @@ if (!('swf2js' in window)){(function(window)
         var length = JPEGData.length;
 
         // erroneous
-        if (JPEGData[0] == 0xFF && JPEGData[1] == 0xD9
-            && JPEGData[2] == 0xFF && JPEGData[3] == 0xD8
-        ) {
+        if (JPEGData[0] === 0xFF && JPEGData[1] === 0xD9 && JPEGData[2] === 0xFF && JPEGData[3] === 0xD8) {
             for (i = 4; i < length; i++) {
                 str += _fromCharCode(JPEGData[i]);
             }
-        } else if (JPEGData[i++] == 0xFF && JPEGData[i++] == 0xD8) {
+        } else if (JPEGData[i++] === 0xFF && JPEGData[i++] === 0xD8) {
             for (idx = 0; idx < i; idx++) {
                 str += _fromCharCode(JPEGData[idx]);
             }
-
             for (; i < length; ) {
-                if (JPEGData[i] == 0xFF) {
-                    if (JPEGData[i + 1] == 0xD9 && JPEGData[i + 2] == 0xFF && JPEGData[i + 3] == 0xD8) {
+                if (JPEGData[i] === 0xFF) {
+                    if (JPEGData[i + 1] === 0xD9 && JPEGData[i + 2] === 0xFF && JPEGData[i + 3] === 0xD8) {
                         i += 4;
                         for (idx = i; idx < length; idx++) {
                             str += _fromCharCode(JPEGData[idx]);
                         }
                         break;
-                    } else if(JPEGData[i+1] == 0xDA) {
+                    } else if(JPEGData[i+1] === 0xDA) {
                         for (idx = i; idx < length; idx++) {
                             str += _fromCharCode(JPEGData[idx]);
                         }
@@ -3305,7 +3398,6 @@ if (!('swf2js' in window)){(function(window)
                 }
             }
         }
-
         return str;
     };
 
@@ -3315,7 +3407,7 @@ if (!('swf2js' in window)){(function(window)
      */
     SwfTag.prototype.base64encode = function(data)
     {
-        if ('btoa' in window) {
+        if (isBtoa) {
             return window.btoa(data);
         }
 
@@ -3326,19 +3418,19 @@ if (!('swf2js' in window)){(function(window)
 
         for (; i < len; ) {
             var c1 = data.charCodeAt(i++) & 0xff;
-            if (i == len) {
+            if (i === len) {
                 out[out.length] = base64EncodeChars.charAt(c1 >> 2);
                 out[out.length] = base64EncodeChars.charAt((c1 & 0x3) << 4);
-                out[out.length] = '==';
+                out[out.length] = "==";
                 break;
             }
 
             var c2 = data.charCodeAt(i++);
-            if (i == len) {
+            if (i === len) {
                 out[out.length] = base64EncodeChars.charAt(c1 >> 2);
                 out[out.length] = base64EncodeChars.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
                 out[out.length] = base64EncodeChars.charAt((c2 & 0xF) << 2);
-                out[out.length] = '=';
+                out[out.length] = "=";
                 break;
             }
 
@@ -3363,12 +3455,14 @@ if (!('swf2js' in window)){(function(window)
         var stage = _this.stage;
         var endOffset = bitio.byte_offset + length;
 
+        var i = 0;
+        var len = 0;
         var obj = {};
         obj.tagType = tagType;
         obj.FontId = bitio.getUI16();
 
         var numGlyphs = 0;
-        if (tagType == 48 || tagType == 75) {
+        if (tagType === 48 || tagType === 75) {
             var fontFlags = bitio.getUI8();
             obj.FontFlagsHasLayout = (fontFlags >>> 7) & 1;
             obj.FontFlagsShiftJIS = (fontFlags >>> 6) & 1;
@@ -3385,17 +3479,20 @@ if (!('swf2js' in window)){(function(window)
             if (obj.FontNameLen) {
                 var startOffset = bitio.byte_offset;
                 var data = bitio.getData(obj.FontNameLen);
-                var str = '';
-                for (var i = 0; i < obj.FontNameLen; i++) {
-                    if (data[i] > 127)
+                var str = "";
+                len = obj.FontNameLen;
+                for (i = 0; i < len; i++) {
+                    if (data[i] > 127) {
                         continue;
+                    }
                     str += _fromCharCode(data[i]);
                 }
 
-                if (obj.FontFlagsShiftJIS || obj.LanguageCode == 1) {
-                    var fontName = decodeToShiftJis(str);
+                var fontName;
+                if (obj.FontFlagsShiftJIS || obj.LanguageCode === 1) {
+                    fontName = decodeToShiftJis(str);
                 } else {
-                    var fontName = _this.encodeToUtf8(str);
+                    fontName = _this.encodeToUtf8(str);
                 }
 
                 obj.FontName = _this.getFontName(fontName);
@@ -3408,39 +3505,41 @@ if (!('swf2js' in window)){(function(window)
 
         // offset
         var offset = bitio.byte_offset;
-
-        if (tagType == 10)
+        if (tagType === 10) {
             numGlyphs = bitio.getUI16();
+        }
 
         if (numGlyphs) {
             var OffsetTable = [];
-            if (tagType == 10) {
+            if (tagType === 10) {
                 OffsetTable[0] = numGlyphs;
                 numGlyphs /= 2;
                 numGlyphs--;
             }
 
             if (obj.FontFlagsWideOffsets) {
-                for (var i = numGlyphs; i--;) {
-                    var len = OffsetTable.length;
-                    OffsetTable[len] = bitio.getUI32();
+                for (i = numGlyphs; i--;) {
+                    OffsetTable[OffsetTable.length] = bitio.getUI32();
                 }
-                if (tagType != 10)
+                if (tagType !== 10) {
                     obj.CodeTableOffset = bitio.getUI32();
-            } else {
-                for (var i = numGlyphs; i--;) {
-                    var len = OffsetTable.length;
-                    OffsetTable[len] = bitio.getUI16();
                 }
-                if (tagType != 10)
+            } else {
+                for (i = numGlyphs; i--;) {
+                    OffsetTable[OffsetTable.length] = bitio.getUI16();
+                }
+                if (tagType !== 10) {
                     obj.CodeTableOffset = bitio.getUI16();
+                }
             }
 
             // Shape
             var GlyphShapeTable = [];
-            if (tagType == 10)
+            if (tagType === 10) {
                 numGlyphs++;
-            for (var i = 0; i < numGlyphs; i++) {
+            }
+
+            for (i = 0; i < numGlyphs; i++) {
                 bitio.setOffset(OffsetTable[i] + offset, 0);
 
                 var numBits = bitio.getUI8();
@@ -3467,21 +3566,19 @@ if (!('swf2js' in window)){(function(window)
                     }]
                 };
 
-                var len = GlyphShapeTable.length;
-                GlyphShapeTable[len] = shapes;
+                GlyphShapeTable[GlyphShapeTable.length] = shapes;
             }
             obj.GlyphShapeTable = GlyphShapeTable;
 
-            if (tagType == 48 || tagType == 75) {
-                // 文字情報
+            if (tagType === 48 || tagType === 75) {
                 bitio.setOffset(obj.CodeTableOffset + offset, 0);
                 var CodeTable = [];
                 if (obj.FontFlagsWideCodes) {
-                    for (var i = numGlyphs; i--;) {
+                    for (i = numGlyphs; i--;) {
                         CodeTable[CodeTable.length] = bitio.getUI16();
                     }
                 } else {
-                    for (var i = numGlyphs; i--;) {
+                    for (i = numGlyphs; i--;) {
                         CodeTable[CodeTable.length] = bitio.getUI8();
                     }
                 }
@@ -3492,22 +3589,22 @@ if (!('swf2js' in window)){(function(window)
                     obj.FontDescent = bitio.getUI16();
                     obj.FontLeading = bitio.getUI16();
 
-                    obj.FontAdvanceTable = [];
-                    for (var i = numGlyphs; i--;) {
-                        var len = obj.FontAdvanceTable.length;
-                        obj.FontAdvanceTable[len] = bitio.getUI16();
+                    var FontAdvanceTable = [];
+                    for (i = numGlyphs; i--;) {
+                        FontAdvanceTable[FontAdvanceTable.length] = bitio.getUI16();
                     }
+                    obj.FontAdvanceTable = FontAdvanceTable;
 
-                    obj.FontBoundsTable = [];
-                    for (var i = numGlyphs; i--;) {
-                        var len = obj.FontBoundsTable.length;
-                        obj.FontBoundsTable[len] = _this.rect();
+                    var FontBoundsTable = [];
+                    for (i = numGlyphs; i--;) {
+                        FontBoundsTable[FontBoundsTable.length] = _this.rect();
                     }
+                    obj.FontBoundsTable = FontBoundsTable;
 
-                    if (tagType == 75) {
+                    if (tagType === 75) {
                         obj.KerningCount = bitio.getUI16();
                         obj.KerningRecord = [];
-                        for (var i = obj.KerningCount; i--;) {
+                        for (i = obj.KerningCount; i--;) {
                             var FontKerningCode1 = (obj.FontFlagsWideCodes) ? bitio.getUI16() : bitio.getUI8();
                             var FontKerningCode2 = (obj.FontFlagsWideCodes) ? bitio.getUI16() : bitio.getUI8();
                             var FontKerningAdjustment = bitio.getSIBits(16);
@@ -3552,7 +3649,6 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var bitio = _this.bitio;
-        var stage = _this.stage;
         var endOffset = bitio.byte_offset + length;
 
         var obj = {};
@@ -3575,13 +3671,14 @@ if (!('swf2js' in window)){(function(window)
         obj.FontFlagsBold = bitio.getUIBits(1);
         obj.FontFlagsWideCodes = bitio.getUIBits(1);
 
-        if (tagType == 62)
+        if (tagType === 62)
             obj.LanguageCode = bitio.getUI8();
 
-        if (obj.FontFlagsShiftJIS || obj.LanguageCode == 1) {
-            var fontName = decodeToShiftJis(str);
+        var fontName;
+        if (obj.FontFlagsShiftJIS || obj.LanguageCode === 1) {
+            fontName = decodeToShiftJis(str);
         } else {
-            var fontName = _this.encodeToUtf8(str);
+            fontName = _this.encodeToUtf8(str);
         }
         obj.FontName = _this.getFontName(fontName);
 
@@ -3600,8 +3697,6 @@ if (!('swf2js' in window)){(function(window)
             }
         }
         obj.CodeTable = CodeTable;
-
-        //stage.setCharacter(obj.FontId, obj);
     };
 
     /**
@@ -3611,21 +3706,18 @@ if (!('swf2js' in window)){(function(window)
     SwfTag.prototype.getFontName = function(fontName)
     {
         switch (fontName) {
-            case '_sans':
-                return 'sans-serif';
-                break;
-            case '_serif':
-                return 'serif';
-                break;
-            case '_typewriter':
-                return 'monospace';
-                break;
+            case "_sans":
+                return "sans-serif";
+            case "_serif":
+                return "serif";
+            case "_typewriter":
+                return "monospace";
             default:
-                var ander = fontName.substr(0,1);
-                if (ander == '_')
-                    return 'sans-serif';
+                var ander = fontName.substr(0, 1);
+                if (ander === "_") {
+                    return "sans-serif";
+                }
                 return fontName;
-                break;
         }
     };
 
@@ -3670,8 +3762,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var bitio = _this.bitio;
         var array = [];
-        for (; bitio.getUI8() != 0; ) {
-            // 1 byte back
+        for (; bitio.getUI8() !== 0; ) {
             bitio.incrementOffset(-1, 0);
 
             var obj = {};
@@ -3686,7 +3777,7 @@ if (!('swf2js' in window)){(function(window)
             }
 
             if (obj.StyleFlagsHasColor) {
-                if (tagType == 11) {
+                if (tagType === 11) {
                     obj.TextColor = _this.rgb();
                 } else {
                     obj.TextColor = _this.rgba();
@@ -3796,18 +3887,18 @@ if (!('swf2js' in window)){(function(window)
             obj.Leading = bitio.getUI16();
         }
 
-        var VariableName = bitio.getDataUntil("\0", isJis) + '';
-        obj.VariableName = (VariableName == '') ? null : VariableName;
-        obj.InitialText = '';
+        var VariableName = bitio.getDataUntil("\0", isJis) + "";
+        obj.VariableName = (VariableName === '') ? null : VariableName;
+        obj.InitialText = "";
         if (obj.HasText) {
             var text = bitio.getDataUntil("\0", isJis);
             if (obj.HTML) {
-                if (text.indexOf('<sbr />') != -1)
-                    text = text.replace(/<sbr \/>/gi, '@LFCR');
+                if (text.indexOf("<sbr />") !== -1)
+                    text = text.replace(/<sbr \/>/gi, "@LFCR");
 
-                var span = _document.createElement('span');
+                var span = _document.createElement("span");
                 span.innerHTML = text;
-                var tags = span.getElementsByTagName('font');
+                var tags = span.getElementsByTagName("font");
                 if (tags.length) {
                     obj.InitialText = tags[0].innerHTML;
 
@@ -3839,7 +3930,7 @@ if (!('swf2js' in window)){(function(window)
         obj.StartBounds = _this.rect();
         obj.EndBounds = _this.rect();
 
-        if (tagType == 84) {
+        if (tagType === 84) {
             obj.StartEdgeBounds = _this.rect();
             obj.EndEdgeBounds = _this.rect();
             var Reserved = bitio.getUIBits(6); // Must be 0
@@ -3854,7 +3945,7 @@ if (!('swf2js' in window)){(function(window)
         obj.MorphLineStyles = _this.lineStyleArray(tagType);
 
         obj.StartEdges = _this.shapeWithStyle(tagType);
-        if (bitio.byte_offset != endOffset) {
+        if (bitio.byte_offset !== endOffset) {
             bitio.byte_offset = endOffset;
         }
 
@@ -3954,26 +4045,26 @@ if (!('swf2js' in window)){(function(window)
         var FillStyle = 0;
         length = obj.StartEdges.ShapeRecords.length;
         for (i = 0; i < length; i++) {
-            var StartRecord = StartRecords[i];
-            if (!StartRecord.isChange)
+            var record = StartRecords[i];
+            if (!record.isChange)
                 continue;
 
-            if (StartRecord.StateFillStyle0)
-                FillStyle = StartRecord.FillStyle0;
+            if (record.StateFillStyle0)
+                FillStyle = record.FillStyle0;
 
             if (FillStyle) {
-                StartRecord.StateFillStyle0 = 1;
-                StartRecord.StateFillStyle1 = 1;
+                record.StateFillStyle0 = 1;
+                record.StateFillStyle1 = 1;
                 if (FillType) {
-                    StartRecord.FillStyle0 = 0;
-                    StartRecord.FillStyle1 = FillStyle;
+                    record.FillStyle0 = 0;
+                    record.FillStyle1 = FillStyle;
                 } else {
-                    StartRecord.FillStyle0 = FillStyle;
-                    StartRecord.FillStyle1 = 0;
+                    record.FillStyle0 = FillStyle;
+                    record.FillStyle1 = 0;
                 }
             } else {
-                StartRecord.StateFillStyle1 = 1;
-                StartRecord.FillStyle1 = 0;
+                record.StateFillStyle1 = 1;
+                record.FillStyle1 = 0;
             }
 
             FillType = (FillType) ? 0 : 1;
@@ -3989,7 +4080,7 @@ if (!('swf2js' in window)){(function(window)
      */
     SwfTag.prototype.buildMorphShape = function(char, ratio)
     {
-        var per = (ratio == undefined) ? 0 : ratio / 65535;
+        var per = (ratio === undefined) ? 0 : ratio / 65535;
         var startPer = 1 - per;
         var newShapeRecords = [];
 
@@ -4033,7 +4124,7 @@ if (!('swf2js' in window)){(function(window)
                 var MoveX = 0;
                 var MoveY = 0;
 
-                if (StartRecord.StateMoveTo == 1) {
+                if (StartRecord.StateMoveTo === 1) {
                     MoveX = StartRecord.MoveX * startPer + EndRecord.MoveX * per;
                     MoveY = StartRecord.MoveY * startPer + EndRecord.MoveY * per;
                     position.x = MoveX;
@@ -4069,16 +4160,13 @@ if (!('swf2js' in window)){(function(window)
                 var endControlX = EndRecord.ControlX;
                 var endControlY = EndRecord.ControlY;
 
-                if (per > 0 && per < 1
-                    && StartRecord.isCurved != EndRecord.isCurved
-                ) {
+                if (per > 0 && per < 1 && StartRecord.isCurved !== EndRecord.isCurved) {
                     if (!StartRecord.isCurved) {
                         startAnchorX = StartRecord.AnchorX / 2;
                         startAnchorY = StartRecord.AnchorY / 2;
                         startControlX = startAnchorX;
                         startControlY = startAnchorY;
                     }
-
                     if (!EndRecord.isCurved) {
                         endAnchorX = EndRecord.AnchorX / 2;
                         endAnchorY = EndRecord.AnchorY / 2;
@@ -4111,11 +4199,14 @@ if (!('swf2js' in window)){(function(window)
         shapes.ShapeRecords = newShapeRecords;
 
 
+        var EndColor;
+        var StartColor;
+        var color;
         for (i = 0; i < lineStyleCount; i++) {
             var lineStyle = lineStyles[i];
-            var EndColor = lineStyle.EndColor;
-            var StartColor = lineStyle.StartColor;
-            var color = {
+            EndColor = lineStyle.EndColor;
+            StartColor = lineStyle.StartColor;
+            color = {
                 R: _floor(StartColor.R * startPer + EndColor.R * per),
                 G: _floor(StartColor.G * startPer + EndColor.G * per),
                 B: _floor(StartColor.B * startPer + EndColor.B * per),
@@ -4135,10 +4226,10 @@ if (!('swf2js' in window)){(function(window)
             var fillStyle = fillStyles[i];
             var fillStyleType = fillStyle.fillStyleType;
 
-            if (fillStyleType == 0x00) {
-                var EndColor = fillStyle.EndColor;
-                var StartColor = fillStyle.StartColor;
-                var color = {
+            if (fillStyleType === 0x00) {
+                EndColor = fillStyle.EndColor;
+                StartColor = fillStyle.StartColor;
+                color = {
                     R: _floor(StartColor.R * startPer + EndColor.R * per),
                     G: _floor(StartColor.G * startPer + EndColor.G * per),
                     B: _floor(StartColor.B * startPer + EndColor.B * per),
@@ -4148,7 +4239,7 @@ if (!('swf2js' in window)){(function(window)
                 shapes.fillStyles.fillStyles[i] = {
                     Color: color,
                     fillStyleType: fillStyleType
-                }
+                };
             } else {
                 var EndGradientMatrix = fillStyle.endGradientMatrix;
                 var StartGradientMatrix = fillStyle.startGradientMatrix;
@@ -4167,9 +4258,9 @@ if (!('swf2js' in window)){(function(window)
                 var gLen = GradientRecords.length;
                 for (var gIdx = 0; gIdx < gLen; gIdx++) {
                     var gRecord = GradientRecords[gIdx];
-                    var StartColor = gRecord.StartColor;
-                    var EndColor = gRecord.EndColor;
-                    var color = {
+                    EndColor = gRecord.EndColor;
+                    StartColor = gRecord.StartColor;
+                    color = {
                         R: _floor(StartColor.R * startPer + EndColor.R * per),
                         G: _floor(StartColor.G * startPer + EndColor.G * per),
                         B: _floor(StartColor.B * startPer + EndColor.B * per),
@@ -4186,7 +4277,7 @@ if (!('swf2js' in window)){(function(window)
                     gradient: { GradientRecords: gRecords },
                     gradientMatrix: cloneArray(matrix),
                     fillStyleType: fillStyleType
-                }
+                };
             }
         }
 
@@ -4223,12 +4314,12 @@ if (!('swf2js' in window)){(function(window)
     SwfTag.prototype.parseRemoveObject = function(tagType)
     {
         var bitio = this.bitio;
-        if (tagType == 5) {
-            console.log('RemoveObject');
+        if (tagType === 5) {
+            console.log("RemoveObject");
             return {
                 CharacterId: bitio.getUI16(),
                 Depth: bitio.getUI16()
-            }
+            };
         }
         return { Depth: bitio.getUI16() };
     };
@@ -4250,7 +4341,7 @@ if (!('swf2js' in window)){(function(window)
         obj.ButtonId = bitio.getUI16();
 
         var ActionOffset = 0;
-        if (tagType != 7) {
+        if (tagType !== 7) {
             var ReservedFlags = bitio.getUIBits(7);
             var TrackAsMenu = bitio.getUIBits(1);
             ActionOffset = bitio.getUI16();
@@ -4259,7 +4350,7 @@ if (!('swf2js' in window)){(function(window)
         obj.characters = _this.buttonCharacters();
 
         // actionScript
-        if (tagType == 7) {
+        if (tagType === 7) {
             obj.actions = _this.parseDoAction(endOffset - bitio.byte_offset);
         } else if (ActionOffset > 0) {
             obj.actions = _this.buttonActions(endOffset);
@@ -4267,7 +4358,7 @@ if (!('swf2js' in window)){(function(window)
 
         // set layer
         stage.setCharacter(obj.ButtonId, obj);
-        if (bitio.byte_offset != endOffset) {
+        if (bitio.byte_offset !== endOffset) {
             bitio.byte_offset = endOffset;
         }
 
@@ -4282,7 +4373,7 @@ if (!('swf2js' in window)){(function(window)
         var characters = [];
         var _this = this;
         var bitio = _this.bitio;
-        for (; bitio.getUI8() != 0; ) {
+        for (; bitio.getUI8() !== 0; ) {
             bitio.incrementOffset(-1, 0);
             var record = _this.buttonRecord();
             var depth = record.Depth;
@@ -4318,9 +4409,7 @@ if (!('swf2js' in window)){(function(window)
         obj.Matrix = _this.matrix();
 
         obj.ColorTransform = _this.colorTransform();
-        obj.PlaceFlagHasColorTransform
-            = (obj.ColorTransform == undefined) ? 0 : 1;
-
+        obj.PlaceFlagHasColorTransform = (obj.ColorTransform === undefined) ? 0 : 1;
         if (obj.ButtonHasBlendMode) {
             obj.BlendMode = bitio.getUI8();
         }
@@ -4330,7 +4419,6 @@ if (!('swf2js' in window)){(function(window)
 
         obj.PlaceFlagHasRatio = 0;
         obj.PlaceFlagHasClipDepth = 0;
-
         obj.Sound = null;
 
         return obj;
@@ -4367,8 +4455,9 @@ if (!('swf2js' in window)){(function(window)
             obj.ActionScript = _this.parseDoAction(length);
             results[results.length] = obj;
 
-            if (!CondActionSize)
+            if (!CondActionSize) {
                 break;
+            }
 
             bitio.byte_offset = startOffset + CondActionSize;
         }
@@ -4386,11 +4475,12 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var bitio = _this.bitio;
         var stage = _this.stage;
+        var Reserved;
         var obj = {};
         obj.tagType = tagType;
         var startOffset = bitio.byte_offset;
 
-        if (tagType == 4) {
+        if (tagType === 4) {
             obj.CharacterId = bitio.getUI16();
             obj.Depth = bitio.getUI16();
             obj.Matrix = _this.matrix();
@@ -4413,8 +4503,8 @@ if (!('swf2js' in window)){(function(window)
             obj.PlaceFlagMove =  placeFlag & 0x01;
 
             // PlaceObject3
-            if (tagType == 70) {
-                var Reserved = bitio.getUIBits(3);
+            if (tagType === 70) {
+                Reserved = bitio.getUIBits(3);
                 obj.PlaceFlagHasImage = bitio.getUIBits(1);
                 obj.PlaceFlagHasClassName = bitio.getUIBits(1);
                 obj.PlaceFlagHasCacheAsBitmap = bitio.getUIBits(1);
@@ -4424,9 +4514,7 @@ if (!('swf2js' in window)){(function(window)
 
             obj.Depth = bitio.getUI16();
 
-            if (obj.PlaceFlagHasClassName
-                || (obj.PlaceFlagHasImage && obj.PlaceFlagHasCharacter)
-            ) {
+            if (obj.PlaceFlagHasClassName || (obj.PlaceFlagHasImage && obj.PlaceFlagHasCharacter)) {
                 obj.ClassName = bitio.getDataUntil("\0");
             }
             if (obj.PlaceFlagHasCharacter) {
@@ -4448,7 +4536,7 @@ if (!('swf2js' in window)){(function(window)
                 obj.ClipDepth = bitio.getUI16();
             }
 
-            if (tagType == 70) {
+            if (tagType === 70) {
                 if (obj.PlaceFlagHasFilterList) {
                     obj.SurfaceFilterList = _this.getFilterList();
                 }
@@ -4461,23 +4549,18 @@ if (!('swf2js' in window)){(function(window)
             }
 
             if (obj.PlaceFlagHasClipActions) {
-                var Reserved = bitio.getUI16();
+                Reserved = bitio.getUI16();
                 obj.AllEventFlags = _this.parseClipEventFlags();
 
                 var endLength = startOffset + length;
                 var actionRecords = [];
                 var endFlag = 0;
                 for (; bitio.byte_offset < endLength; ) {
-                    actionRecords[actionRecords.length] =
-                        _this.parseClipActionRecord();
-
-                    endFlag = (stage.getVersion() <= 5)
-                        ? bitio.getUI16()
-                        : bitio.getUI32();
-
-                    if (!endFlag)
+                    actionRecords[actionRecords.length] = _this.parseClipActionRecord();
+                    endFlag = (stage.getVersion() <= 5) ? bitio.getUI16() : bitio.getUI32();
+                    if (!endFlag) {
                         break;
-
+                    }
                     if (stage.getVersion() <= 5) {
                         bitio.byte_offset -= 2;
                     } else {
@@ -4522,6 +4605,7 @@ if (!('swf2js' in window)){(function(window)
         var obj = {};
         var bitio = _this.bitio;
         var stage = _this.stage;
+        var Reserved;
 
         obj.keyUp = bitio.getUIBits(1);
         obj.keyDown = bitio.getUIBits(1);
@@ -4544,7 +4628,7 @@ if (!('swf2js' in window)){(function(window)
 
         obj.ClipEventData = bitio.getUIBits(1);
         if (stage.getVersion() >= 6) {
-            var Reserved = bitio.getUIBits(5);
+            Reserved = bitio.getUIBits(5);
             obj.construct = bitio.getUIBits(1);
             obj.keyPress = bitio.getUIBits(1);
             obj.dragOut = bitio.getUIBits(1);
@@ -4644,7 +4728,7 @@ if (!('swf2js' in window)){(function(window)
         obj.BlurY = bitio.getFloat16() | bitio.getFloat16();
         obj.Passes = bitio.getUIBits(5);
         var Reserved = bitio.getUIBits(3);
-        return obj
+        return obj;
     };
 
     /**
@@ -4879,23 +4963,24 @@ if (!('swf2js' in window)){(function(window)
         var bitio = this.bitio;
 
         var obj = {};
+        var i = 0;
         obj.SceneCount = bitio.getEncodedU32();
 
         obj.sceneInfo = [];
-        for (var i = 0; i < obj.SceneCount; i++) {
+        for (i = 0; i < obj.SceneCount; i++) {
             obj.sceneInfo[i] = {
                 offset: bitio.getEncodedU32(),
-                name: _decodeURIComponent(bitio.getDataUntil('\0'))
+                name: _decodeURIComponent(bitio.getDataUntil("\0"))
             };
         }
 
         obj.FrameLabelCount = bitio.getEncodedU32();
 
         obj.frameInfo = [];
-        for (var i = 0; i < obj.FrameLabelCount; i++) {
+        for (i = 0; i < obj.FrameLabelCount; i++) {
             obj.frameInfo[i] = {
                 num: bitio.getEncodedU32(),
-                label: _decodeURIComponent(bitio.getDataUntil('\0'))
+                label: _decodeURIComponent(bitio.getDataUntil("\0"))
             };
         }
 
@@ -4943,7 +5028,7 @@ if (!('swf2js' in window)){(function(window)
 
         obj.StreamSoundSampleCount = bitio.getUI16();
 
-        if (obj.StreamSoundCompression == 2) {
+        if (obj.StreamSoundCompression === 2) {
             obj.LatencySeek = bitio.getSIBits(2);
         }
 
@@ -4964,7 +5049,7 @@ if (!('swf2js' in window)){(function(window)
         var obj = {};
         obj.tagType = tagType;
         obj.Flags = bitio.getUI32();
-        obj.Name = bitio.getDataUntil('\0');
+        obj.Name = bitio.getDataUntil("\0");
         var moveOffset = bitio.byte_offset - startOffset;
         obj.ABCData = _this.parseDoAction(length - moveOffset);
         return obj;
@@ -4985,13 +5070,13 @@ if (!('swf2js' in window)){(function(window)
         };
         for (var i = 0; i < obj.NumSymbols; i++) {
             var tagId = bitio.getUI16();
-            var name = bitio.getDataUntil('\0');
+            var name = bitio.getDataUntil("\0");
             obj.class2tag.symbols[i] = {
                 tag: tagId,
                 name: name
             };
 
-            if (tagId == 0) {
+            if (tagId === 0) {
                 obj.class2tag.topLevelClass = name;
                 continue;
             }
@@ -5029,32 +5114,32 @@ if (!('swf2js' in window)){(function(window)
         }
         bitio.byte_offset = startOffset + length;
 
-        var mimeType = '';
+        var mimeType = "";
         switch (obj.SoundFormat) {
             case 0: // Uncompressed native-endian
             case 3: // Uncompressed little-endian
-                mimeType = 'x-wav';
+                mimeType = "wav";
                 break;
             case 1: // ADPCM ? 32KADPCM
-                mimeType = 'wav';
+                mimeType = "wav";
                 break;
             case 2: // MP3
-                mimeType = 'mpeg';
+                mimeType = "mpeg";
                 break;
             case 4: // Nellymoser 16
             case 5: // Nellymoser 8
             case 6: //
-                mimeType = 'nellymoser';
+                mimeType = "nellymoser";
                 break;
             case 11: // Speex
-                mimeType = 'speex';
+                mimeType = "speex";
                 break;
             case 15:
-                mimeType = 'x-aiff';
+                mimeType = "x-aiff";
                 break;
         }
 
-        obj.base64 = 'data:audio/'+ mimeType +';base64,' + window.btoa(SoundData);
+        obj.base64 = "data:audio/"+ mimeType +";base64," + window.btoa(SoundData);
         stage.sounds[obj.SoundId] = obj;
     };
 
@@ -5070,19 +5155,19 @@ if (!('swf2js' in window)){(function(window)
 
         obj.tagType = tagType;
         obj.SoundId = bitio.getUI16();
-        if (tagType == 89) {
-            obj.SoundClassName = bitio.getDataUntil('\0');
+        if (tagType === 89) {
+            obj.SoundClassName = bitio.getDataUntil("\0");
         }
 
         obj.SoundInfo = _this.parseSoundInfo();
         stage.setCharacter(obj.SoundId, obj);
 
         var sound = stage.sounds[obj.SoundId];
-        var audio = _document.createElement('audio');
+        var audio = _document.createElement("audio");
         audio.onload = function()
         {
             this.load();
-            this.preload = 'auto';
+            this.preload = "auto";
             this.autoplay = false;
             this.loop = false;
         };
@@ -5208,7 +5293,7 @@ if (!('swf2js' in window)){(function(window)
                 Mask: bitio.getUI8()
                 //    ZoneMaskY: bitio.getUIBits(1),
                 //    ZoneMaskX: bitio.getUIBits(1)
-            }
+            };
         }
 
         bitio.byteAlign();
@@ -5317,7 +5402,7 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var bitio = _this.bitio;
-        var VideoData = '';
+        var VideoData = "";
         var data = bitio.getData(length);
         return VideoData;
     };
@@ -5331,11 +5416,11 @@ if (!('swf2js' in window)){(function(window)
      */
     var ActionScript = function (data, constantPool, register, initAction)
     {
-        this.id = asId++; // TODO けす
+        this.id = asId++;
         this.cache = [];
         this.params = [];
-        this.constantPool = (constantPool == undefined) ? [] : constantPool;
-        this.register = (register == undefined) ? [] : register;
+        this.constantPool = (constantPool === undefined) ? [] : constantPool;
+        this.register = (register === undefined) ? [] : register;
         this.variables = [];
         this.initAction = (initAction) ? true : false;
         this.scope = null;
@@ -5353,7 +5438,7 @@ if (!('swf2js' in window)){(function(window)
         var params = [];
         for (var i = 0; i < length; i++) {
             var obj = register[i];
-            if (obj.name == null) {
+            if (obj.name === null) {
                 params[obj.register] = obj.value;
             } else {
                 params[obj.register] = obj.name;
@@ -5374,7 +5459,7 @@ if (!('swf2js' in window)){(function(window)
         var key = 0;
         for (var i = 0; i < length; i++) {
             var obj = register[i];
-            if (obj.name == null)
+            if (obj.name === null)
                 continue;
             variables[obj.name] = values[key++];
         }
@@ -5399,8 +5484,21 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var value = _this.variables[name];
-        if (value == undefined)
+        if (value === undefined) {
             value = _this[name];
+        }
+        return value;
+    };
+
+    /**
+     * @param value
+     * @returns {*}
+     */
+    ActionScript.prototype.valueToString = function(value)
+    {
+        if (typeof value !== "string") {
+            value += "";
+        }
         return value;
     };
 
@@ -5411,8 +5509,17 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var isEnd = false;
+        var obj = {};
+        var i = 0;
+        var idx = 0;
         var cache = [];
         var indexes = [];
+        var Reserved;
+        var asData;
+        var register;
+        var values;
+        var NumParams;
+        var payloadLength;
         var withEndPoint = 0;
         var bitio = new BitIO();
         bitio.setData(data);
@@ -5423,9 +5530,9 @@ if (!('swf2js' in window)){(function(window)
         _this.initParam();
         for (; bitio.byte_offset < endPoint; ) {
             var startOffset = bitio.byte_offset;
-            var obj = {};
+            obj = {};
 
-            if (withEndPoint && withEndPoint == bitio.byte_offset) {
+            if (withEndPoint && withEndPoint === bitio.byte_offset) {
                 withEndPoint = 0;
                 obj.actionCode = 0x94;
                 obj.Size = 0;
@@ -5438,7 +5545,7 @@ if (!('swf2js' in window)){(function(window)
 
             var payload = null;
             if (actionCode >= 0x80) {
-                var payloadLength = bitio.getUI16();
+                payloadLength = bitio.getUI16();
                 payload = bitio.getData(payloadLength);
                 pBitio.setData(payload);
                 pBitio.setOffset(0, 0);
@@ -5465,10 +5572,10 @@ if (!('swf2js' in window)){(function(window)
                 case 0x83:
                     var len = payload.length - 1;
                     var urls = [[]];
-                    var idx = 0;
-                    for (var i = 0; i < len; i++) {
+                    idx = 0;
+                    for (i = 0; i < len; i++) {
                         var str = _fromCharCode(payload[i]);
-                        if (payload[i] == 0) {
+                        if (payload[i] === 0) {
                             idx++;
                             urls[idx] = [];
                             continue;
@@ -5478,69 +5585,56 @@ if (!('swf2js' in window)){(function(window)
                     }
 
                     var urlString = urls[0];
-                    if (typeof urlString == 'string') {
-                        var splitUrl = urlString.split('?');
-
-                        // ?が2個あった場合は&に変更
+                    if (typeof urlString === "string") {
+                        var splitUrl = urlString.split("?");
                         if (2 in splitUrl) {
                             urlString = splitUrl[0];
-                            urlString += '?' + splitUrl[1];
+                            urlString += "?" + splitUrl[1];
                             var paramLength = splitUrl.length;
-                            for (var i = 2; i < paramLength; i++) {
-                                urlString += '&' + splitUrl[i];
+                            for (i = 2; i < paramLength; i++) {
+                                urlString += "&" + splitUrl[i];
                             }
                         }
                     }
 
                     obj.url = urlString;
                     obj.target = urls[1];
-
                     break;
                 // Push
                 case 0x96:
-                    var values = [];
+                    values = [];
                     for (; pBitio.byte_offset < payloadLength; ) {
                         var type = pBitio.getUI8();
                         switch (type) {
-                            // String
-                            case 0:
+                            case 0: // String
                                 values[values.length] = String(pBitio.getDataUntil("\0"));
                                 break;
-                            // Float
-                            case 1:
+                            case 1: // Float
                                 values[values.length] = pBitio.getFloat32();
                                 break;
-                            // null
-                            case 2:
+                            case 2: // null
                                 values[values.length] = null;
                                 break;
-                            // undefined
-                            case 3:
+                            case 3: // undefined
                                 values[values.length] = undefined;
                                 break;
-                            // RegisterNumber
-                            case 4:
+                            case 4: // RegisterNumber
                                 values[values.length] = {"key": pBitio.getUI8()};
                                 break;
-                            // Boolean
-                            case 5:
+                            case 5: // Boolean
                                 values[values.length] = (pBitio.getUI8()) ? true : false;
                                 break;
-                            // Double
-                            case 6:
+                            case 6: // Double
                                 values[values.length] = pBitio.getFloat64();
                                 break;
-                            // Integer
-                            case 7:
+                            case 7: // Integer
                                 values[values.length] = pBitio.getUI32();
                                 break;
-                            // Constant8
-                            case 8:
-                                values[values.length] = this.constantPool[pBitio.getUI8()];
+                            case 8: // Constant8
+                                values[values.length] = _this.constantPool[pBitio.getUI8()];
                                 break;
-                            // Constant16
-                            case 9:
-                                values[values.length] = this.constantPool[pBitio.getUI16()];
+                            case 9: // Constant16
+                                values[values.length] = _this.constantPool[pBitio.getUI16()];
                                 break;
                             default:
                                 break;
@@ -5560,16 +5654,17 @@ if (!('swf2js' in window)){(function(window)
                 case 0x9A:
                     obj.LoadVariablesFlag = pBitio.getUIBits(1); // 0=none, 1=LoadVariables
                     obj.LoadTargetFlag = pBitio.getUIBits(1);// 0=web, 1=スプライト
-                    var Reserved = pBitio.getUIBits(4);
+                    Reserved = pBitio.getUIBits(4);
                     obj.SendVarsMethod = pBitio.getUIBits(2);// 0=NONE, 1=GET, 2=POST
                     break;
                 // GoToFrame2
                 case 0x9F:
-                    var Reserved = pBitio.getUIBits(6);
+                    Reserved = pBitio.getUIBits(6);
                     obj.SceneBiasFlag = pBitio.getUIBit();
                     obj.PlayFlag = pBitio.getUIBit();// 0=stop, 1=play
-                    if (obj.SceneBiasFlag == 1)
+                    if (obj.SceneBiasFlag === 1) {
                         obj.SceneBias = pBitio.getUI16();
+                    }
                     break;
                 // WaitForFrame2
                 case 0x8D:
@@ -5588,9 +5683,9 @@ if (!('swf2js' in window)){(function(window)
                 // ActionDefineFunction
                 case 0x9b:
                     obj.FunctionName = pBitio.getDataUntil("\0");
-                    var NumParams = pBitio.getUI16();
-                    var register = [];
-                    var idx = 1;
+                    NumParams = pBitio.getUI16();
+                    register = [];
+                    idx = 1;
                     for (; NumParams--;) {
                         register[register.length] = {
                             register: idx,
@@ -5598,17 +5693,17 @@ if (!('swf2js' in window)){(function(window)
                             value: null
                         };
                     }
-                    var codeSize  = pBitio.getUI16();
-                    var data = bitio.getData(codeSize);
-                    var as = new ActionScript(data, _this.constantPool, register, _this.initAction);
+
                     obj.ActionScript = function ActionScript(as, mc, args)
                     {
                         as.initVariable(args);
-                        if (as.initAction)
-                            as.variables['this'] = this;
+                        if (as.initAction) {
+                            as.variables["this"] = this;
+                        }
                         return as.execute(mc);
                     };
-                    obj.ActionScript.cache = as;
+                    asData = bitio.getData(pBitio.getUI16());
+                    obj.ActionScript.cache = new ActionScript(asData, _this.constantPool, register, _this.initAction);
 
                     break;
                 // ActionWith
@@ -5623,11 +5718,11 @@ if (!('swf2js' in window)){(function(window)
                 // SWF 7 ***********************************
                 // ActionDefineFunction2
                 case 0x8e:
-                    var register = [];
-                    var values = [];
+                    register = [];
+                    values = [];
 
                     obj.FunctionName = pBitio.getDataUntil("\0");
-                    var NumParams = pBitio.getUI16();
+                    NumParams = pBitio.getUI16();
                     var RegisterCount = pBitio.getUI8();
                     obj.PreloadParentFlag = pBitio.getUIBits(1);
                     obj.PreloadRootFlag = pBitio.getUIBits(1);
@@ -5637,33 +5732,32 @@ if (!('swf2js' in window)){(function(window)
                     obj.PreloadArgumentsFlag = pBitio.getUIBits(1);
                     obj.SuppressThisFlag = pBitio.getUIBits(1);
                     obj.PreloadThisFlag = pBitio.getUIBits(1);
-                    var Reserved = pBitio.getUIBits(7);
+                    Reserved = pBitio.getUIBits(7);
                     obj.PreloadGlobalFlag = pBitio.getUIBits(1);
 
-                    if (obj.PreloadThisFlag)
-                        values[values.length] = 'this';
-
-                    if (obj.PreloadArgumentsFlag)
-                        values[values.length] = 'arguments';
-
-                    if (obj.PreloadSuperFlag)
-                        values[values.length] = 'super';
-
-                    if (obj.PreloadGlobalFlag)
-                        values[values.length] = '_global';
-
-                    if (obj.PreloadRootFlag)
-                        values[values.length] = '_root';
-
-                    if (obj.PreloadParentFlag)
-                        values[values.length] = '_parent';
-
-                    // 固定の変数
-                    for (var idx = 1; idx < RegisterCount; idx++) {
-                        var rIdx = idx-1;
-                        if (!(rIdx in values))
+                    if (obj.PreloadThisFlag) {
+                        values[values.length] = "this";
+                    }
+                    if (obj.PreloadArgumentsFlag) {
+                        values[values.length] = "arguments";
+                    }
+                    if (obj.PreloadSuperFlag) {
+                        values[values.length] = "super";
+                    }
+                    if (obj.PreloadGlobalFlag) {
+                        values[values.length] = "_global";
+                    }
+                    if (obj.PreloadRootFlag) {
+                        values[values.length] = "_root";
+                    }
+                    if (obj.PreloadParentFlag) {
+                        values[values.length] = "_parent";
+                    }
+                    for (idx = 1; idx < RegisterCount; idx++) {
+                        var rIdx = idx - 1;
+                        if (!(rIdx in values)) {
                             continue;
-
+                        }
                         register[register.length] = {
                             register: idx,
                             name: null,
@@ -5682,22 +5776,21 @@ if (!('swf2js' in window)){(function(window)
                         };
                     }
 
-                    var codeSize  = pBitio.getUI16();
-                    var data = bitio.getData(codeSize);
-                    var as = new ActionScript(data, _this.constantPool, register, _this.initAction);
                     obj.ActionScript = function ActionScript(as, mc, args)
                     {
                         as.initVariable(args);
-                        if (as.initAction)
-                            as.variables['this'] = this;
+                        if (as.initAction) {
+                            as.variables["this"] = this;
+                        }
                         return as.execute(mc);
                     };
-                    obj.ActionScript.cache = as;
+                    asData = bitio.getData(pBitio.getUI16());
+                    obj.ActionScript.cache = new ActionScript(asData, _this.constantPool, register, _this.initAction);
                     break;
                 // ActionTry
                 case 0x8f:
                     console.log('ActionTry');
-                    var Reserved = pBitio.getUIBits(5);
+                    Reserved = pBitio.getUIBits(5);
                     var CatchInRegisterFlag = pBitio.getUIBits(1);
                     var FinallyBlockFlag = pBitio.getUIBits(1);
                     var CatchBlockFlag = pBitio.getUIBits(1);
@@ -5711,7 +5804,7 @@ if (!('swf2js' in window)){(function(window)
                         var CatchRegister = pBitio.getUI8();
                     }
 
-                    var i = 0;
+                    i = 0;
                     var TryBody = [];
                     if (TrySize) {
                         for (i = TrySize; i--;) {
@@ -5754,19 +5847,18 @@ if (!('swf2js' in window)){(function(window)
 
         // If and Jump
         var length = cache.length;
-        for (var i = 0; i < length; i++) {
-            var obj = cache[i];
+        for (i = 0; i < length; i++) {
+            obj = cache[i];
             var code = obj.actionCode;
-            if (code == 0x9D || code == 0x99) {
+            if (code === 0x9D || code === 0x99) {
                 var index = indexes[obj.offset];
-                if (index != undefined) {
+                if (index !== undefined) {
                     obj.offset = index - 1;
                 } else {
                     obj.offset = cache.length - 1;
                 }
             }
         }
-
         _this.cache = cache;
     };
 
@@ -5776,33 +5868,49 @@ if (!('swf2js' in window)){(function(window)
      */
     ActionScript.prototype.calc = function(value)
     {
+        var calc;
         switch (typeof value) {
             case "boolean":
+                calc = value;
                 break;
             case "string":
-                if (value == "") {
-                    value = 0;
+                if (value === "") {
+                    calc = 0;
                 } else {
-                    value = _parseFloat(value);
-                    if (_isNaN(value))
-                        value = 1;
+                    calc = _parseFloat(value);
+                    if (_isNaN(calc)) {
+                        calc = 1;
+                    }
                 }
-
                 break;
             case "object":
-                if (value == null) {
-                    value = 0;
+                if (value === null) {
+                    calc = 0;
                 } else if (value instanceof Array) {
-                    value = value.length;
+                    calc = value.length;
                 } else if (value instanceof Object) {
-                    value = 1;
+                    calc = 1;
                 }
                 break;
             default:
-                value = _parseFloat(value);
-                if (_isNaN(value))
-                    value = 0;
+                calc = _parseFloat(value);
+                if (_isNaN(calc)) {
+                    calc = 0;
+                }
                 break;
+        }
+        return calc;
+    };
+
+    /**
+     * @param value
+     * @returns {Number|*}
+     */
+    ActionScript.prototype.operationValue = function(value)
+    {
+        value = _parseFloat(value);
+        if (_isNaN(value)) {
+            value = 0;
         }
         return value;
     };
@@ -5813,1260 +5921,336 @@ if (!('swf2js' in window)){(function(window)
      */
     ActionScript.prototype.execute = function(mc)
     {
+        if (!mc.active) {
+            return 0;
+        }
+
         var _this = this;
         var stack = [];
         var movieClip = mc;
         var stage = mc.getStage();
         var version = stage.getVersion();
-        if (!mc.active)
-            return 0;
-
-        // 開始
+        stage = null;
         var cache = _this.cache;
         var cLength = cache.length;
         for (var cIdx = 0; cIdx < cLength; cIdx++) {
-            if (!(cIdx in cache))
+            if (!(cIdx in cache)) {
                 continue;
+            }
 
             var aScript = cache[cIdx];
             var actionCode = aScript.actionCode;
-            if (!actionCode)
+            if (!actionCode) {
                 break;
+            }
 
             switch (actionCode) {
                 // ********************************************
                 // SWF 3
                 // ********************************************
-                // GotoFrame
                 case 0x81:
-                    if (movieClip) {
-                        movieClip.stop();
-                        movieClip.setNextFrame(aScript.frame);
-                    }
+                    _this.ActionGotoFrame(movieClip, aScript.frame);
                     break;
-                // NextFrame
                 case 0x04:
-                    if (movieClip)
-                        movieClip.nextFrame();
+                    _this.ActionNextFrame(movieClip);
                     break;
-                // PreviousFrame
                 case 0x05:
-                    if (movieClip)
-                        movieClip.prevFrame();
+                    _this.ActionPreviousFrame(movieClip);
                     break;
-                // Play
                 case 0x06:
-                    if (movieClip)
-                        movieClip.play();
+                    _this.ActionPlay(movieClip);
                     break;
-                // Stop
                 case 0x07:
-                    if (movieClip)
-                        movieClip.stop();
+                    _this.ActionStop(movieClip);
                     break;
-                // ToggleQuality
-                case 0x08:
-                    // JavaScriptなので使わない
+                case 0x08: // ActionToggleQuality
+                case 0x8A: // ActionWaitForFrame
                     break;
-                // StopSounds
                 case 0x09:
-                    if (movieClip)
-                        movieClip.stopAllSounds();
+                    _this.ActionStopSounds(movieClip);
                     break;
-                // WaitForFrame
-                case 0x8A:
-                    if (movieClip) {
-                        var frame = aScript.frame;
-                        var skipCount = aScript.skipCount;
-                    }
-                    break;
-                // SetTarget
                 case 0x8B:
-                    var targetName = aScript.targetName;
-                    if (targetName != '') {
-                        if (movieClip == null)
-                            movieClip = mc;
-                        movieClip = movieClip.getMovieClip(targetName);
-                    } else {
-                        movieClip = null;
-                        if (mc.active)
-                            movieClip = mc;
-                    }
+                    movieClip = _this.ActionSetTarget(movieClip, mc, aScript.targetName);
                     break;
-                // GoToLabel
                 case 0x8C:
-                    if (movieClip) {
-                        var frame = movieClip.getLabel(aScript.label);
-                        movieClip.stop();
-                        if (typeof frame == 'number')
-                            movieClip.setNextFrame(frame);
-                    }
+                    _this.ActionGoToLabel(movieClip, aScript.label);
                     break;
-                // GetUrl
                 case 0x83:
-                    if (movieClip)
-                        movieClip.getURL(aScript.url, aScript.target);
+                    _this.ActionGetURL(movieClip, aScript.url, aScript.target);
                     break;
 
                 // ********************************************
                 // SWF 4
                 // ********************************************
-
-                // 算術演算 ***********************************
-                // Add
                 case 0x0A:
-                    var a = _parseFloat(stack.pop());
-                    var b = _parseFloat(stack.pop());
-                    if (_isNaN(a)) a = 0;
-                    if (_isNaN(b)) b = 0;
-                    stack[stack.length] = a + b;
+                    _this.ActionAdd(stack);
                     break;
-                // Subtract
                 case 0x0B:
-                    var a = _parseFloat(stack.pop());
-                    var b = _parseFloat(stack.pop());
-                    if (_isNaN(a)) a = 0;
-                    if (_isNaN(b)) b = 0;
-                    stack[stack.length] = b - a;
+                    _this.ActionSubtract(stack);
                     break;
-                // Multiply
                 case 0x0C:
-                    var a = _parseFloat(stack.pop());
-                    var b = _parseFloat(stack.pop());
-                    if (_isNaN(a)) a = 0;
-                    if (_isNaN(b)) b = 0;
-                    stack[stack.length] = a * b;
+                    _this.ActionMultiply(stack);
                     break;
-                // Divide
                 case 0x0D:
-                    var a = _parseFloat(stack.pop());
-                    var b = _parseFloat(stack.pop());
-                    if (_isNaN(a)) a = 0;
-                    if (_isNaN(b)) b = 0;
-                    stack[stack.length] = b / a;
+                    _this.ActionDivide(stack);
                     break;
-
-                // 数値比較 ***********************************
-                // Equals
                 case 0x0E:
-                    var a = _this.calc(stack.pop());
-                    var b = _this.calc(stack.pop());
-                    if (version > 4) {
-                        stack[stack.length] = (a == b);
-                    } else {
-                        stack[stack.length] = (a == b) ? 1 : 0;
-                    }
+                    _this.ActionEquals(stack, version);
                     break;
-                // Less
                 case 0x0F:
-                    var a = _this.calc(stack.pop());
-                    var b = _this.calc(stack.pop());
-                    if (version > 4) {
-                        stack[stack.length] = (b < a);
-                    } else {
-                        stack[stack.length] = (b < a) ? 1 : 0;
-                    }
+                    _this.ActionLess(stack, version);
                     break;
-                // 論理演算 ***********************************
-                // And
                 case 0x10:
-                    var a = _this.calc(stack.pop());
-                    var b = _this.calc(stack.pop());
-                    if (version > 4) {
-                        stack[stack.length] = (a != 0 && b != 0);
-                    } else {
-                        stack[stack.length] = (a != 0 && b != 0) ? 1 : 0;
-                    }
+                    _this.ActionAnd(stack, version);
                     break;
-                // Or
                 case 0x11:
-                    var a = _this.calc(stack.pop());
-                    var b = _this.calc(stack.pop());
-                    if (version > 4) {
-                        stack[stack.length] = (a != 0 || b != 0);
-                    } else {
-                        stack[stack.length] = (a != 0 || b != 0) ? 1 : 0;
-                    }
+                    _this.ActionOr(stack, version);
                     break;
-                // Not
                 case 0x12:
-                    var value = _this.calc(stack.pop());
-                    if (version > 4) {
-                        stack[stack.length] = (value == 0);
-                    } else {
-                        stack[stack.length] = (value == 0) ? 1 : 0;
-                    }
+                    _this.ActionNot(stack, version);
                     break;
-
-                // 文字列操作 ***********************************
-                // StringEquals
                 case 0x13:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    if (version > 4) {
-                        stack[stack.length] = (b == a);
-                    } else {
-                        stack[stack.length] = (b == a) ? 1 : 0;
-                    }
+                    _this.ActionStringEquals(stack, version);
                     break;
-                case 0x14: // StringLength
-                case 0x31: // MBStringLength
-                    var string = stack.pop() + '';
-                    var src = _escape(string.toString());
-                    var length = 0;
-                    var sLen = src.length;
-                    for (i = 0; i < sLen; i++, length++) {
-                        if (src.charAt(i) == "%") {
-                            if (src.charAt(++i) == "u") {
-                                i += 3;
-                                length++;
-                            }
-                            i++;
-                        }
-                    }
-                    stack[stack.length] = length;
+                case 0x14: // ActionStringLength
+                case 0x31: // ActionMBStringLength
+                    _this.ActionStringLength(stack);
                     break;
-                // StringAdd
                 case 0x21:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    if (a == null) a = '';
-                    if (b == null) b = '';
-                    stack[stack.length] = b + '' + a;
+                    _this.ActionStringAdd(stack);
                     break;
-                case 0x15:// StringExtract
-                case 0x35:// MBStringExtract
-                    var count = stack.pop();
-                    var index = stack.pop() - 1;
-                    if (index < 0) index = 0;
-                    var string = stack.pop() + '';
-                    stack[stack.length] = (count < 0)
-                        ? string.substr(index)
-                        : string.substr(index, count);
+                case 0x15:// ActionStringExtract
+                case 0x35:// ActionMBStringExtract
+                    _this.ActionStringExtract(stack);
                     break;
-                // StringLess
                 case 0x29:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    if (version > 4) {
-                        stack[stack.length] = (b < a);
-                    } else {
-                        stack[stack.length] = (b < a) ? 1 : 0;
-                    }
+                    _this.ActionStringLess(stack);
                     break;
-
-                // スタック操作 ***********************************
-                // Pop
-                case 0x17:
+                case 0x17: // ActionPop
                     stack.pop();
                     break;
-                // Push
                 case 0x96:
-                    var values = aScript.values;
-                    var vLen = values.length;
-                    var params = _this.params;
-                    for (var i = 0; i < vLen; i++) {
-                        var value = values[i];
-                        if (value instanceof Object) {
-                            var key = value.key;
-                            value = undefined;
-                            if (key in params) {
-                                var name = params[key];
-                                if (typeof name == 'string') {
-                                    value = _this.getVariable(name);
-                                    if (value == undefined)
-                                        value = movieClip.getVariable(name);
-                                }
-                                if (value == undefined)
-                                    value = name;
-                            }
-                        }
-                        stack[stack.length] = value;
-                    }
+                    _this.ActionPush(stack, movieClip, aScript.values);
                     break;
-
-                // 型変換 ***********************************
-                // AsciiToChar
-                case 0x33:
-                    var value = stack.pop();
-                    stack[stack.length] = _fromCharCode(value);
+                case 0x33: // ActionAsciiToChar
+                case 0x37: // ActionMBAsciiToChar
+                    _this.ActionAsciiToChar(stack);
                     break;
-                // MBCharToAscii
-                case 0x36:
-                    var value = stack.pop() + "";
-                    stack[stack.length] = value.charCodeAt(0);
+                case 0x36: // ActionMBCharToAscii
+                case 0x32: // ActionCharToAscii
+                    _this.ActionCharToAscii(stack);
                     break;
-                // MBAsciiToChar
-                case 0x37:
-                    var value = stack.pop();
-                    stack[stack.length] = _fromCharCode(value);
-                    break;
-                // ToInteger
                 case 0x18:
-                    var value = _floor(stack.pop());
-                    stack[stack.length] = value;
+                    _this.ActionToInteger(stack);
                     break;
-                // CharToAscii
-                case 0x32:
-                    var value = stack.pop() + "";
-                    stack[stack.length] = value.charCodeAt(0);
-                    break;
-
-                // フロー制御 ***********************************
-                // Call
                 case 0x9E:
-                    var value = stack.pop() + '';
-                    var splitData = value.split(':');
-                    if (movieClip == null)
-                        break;
-
-                    if (splitData.length > 1) {
-                        var targetMc = movieClip.getMovieClip(splitData[0]);
-                        if (targetMc != null) {
-                            var frame = (typeof splitData[1] == 'number')
-                                ? frame = splitData[1]
-                                : frame = targetMc.getLabel(splitData[1]);
-                            targetMc.executeActions(frame);
-                        }
-                    } else {
-                        var frame = (typeof splitData[0] == 'number')
-                            ? splitData[0]
-                            : movieClip.getLabel(splitData[0]);
-                        movieClip.executeActions(frame);
-                    }
+                    _this.ActionCall(stack, movieClip);
                     break;
-                // If
                 case 0x9D:
-                    var condition = stack.pop();
-                    switch (typeof condition) {
-                        case 'boolean':
-                            break;
-                        case 'string':
-                            if (!_isNaN(condition))
-                                condition = _parseFloat(condition);
-                            break;
-                    }
-                    if (condition)
-                        cIdx = aScript.offset;
+                    cIdx = _this.ActionIf(stack, aScript.offset, cIdx);
                     break;
-                // Jump
-                case 0x99:
+                case 0x99: // ActionJump
                     cIdx = aScript.offset;
                     break;
-
-                // 変数 ***********************************
-                // GetVariable
                 case 0x1C:
-                    var name = stack.pop();
-                    var value = undefined;
-                    if (name instanceof MovieClip) {
-                        value = name;
-                    } else {
-                        value = _this.getVariable(name);
-                        if (value == undefined && movieClip)
-                            value = movieClip.getProperty(name);
-                        if (value == undefined && _this.scope)
-                            value = _this.scope.getProperty(name);
-                    }
-
-                    stack[stack.length] = value;
+                    _this.ActionGetVariable(stack, movieClip);
                     break;
-                // SetVariable
                 case 0x1D:
-                    var value = stack.pop();
-                    var name = stack.pop() + '';
-                    if (_this.scope) {
-                        _this.scope.setProperty(name, value);
-                    } else if (movieClip) {
-                        movieClip.setProperty(name, value);
-                    }
+                    _this.ActionSetVariable(stack, movieClip);
                     break;
-
-                // ムービー制御 ***********************************
-                // GetURL2
                 case 0x9A:
-                    var target = stack.pop();
-                    var urlString = stack.pop();
-
-                    var LoadVariablesFlag = aScript.LoadVariablesFlag; // 0=none, 1=LoadVariables
-                    var LoadTargetFlag = aScript.LoadTargetFlag; // 0=web, 1=スプライト
-                    var Reserved = aScript.Reserved;
-                    var SendVarsMethod = aScript.SendVarsMethod; // 0=NONE, 1=GET, 2=POST
-
-                    var method = 'GET';
-                    if (SendVarsMethod == 2)
-                        method = 'POST';
-
-                    if (movieClip instanceof MovieClip) {
-                        if (urlString) {
-                            // 分解してチェック
-                            var urls = urlString.split('?');
-                            var uLen = urls.length;
-
-                            var query = '';
-                            if (uLen == 1) {
-                                query = '?';
-                            }
-
-                            if (uLen > 2) {
-                                var url = urls[0] + '?';
-                                url = url + urls[1];
-                                for (var u = 2; u < uLen; u++) {
-                                    var params = urls[u];
-                                    url = url + '&' + params
-                                }
-                            } else {
-                                var url = urlString;
-                            }
-
-                            // local variables
-                            if (SendVarsMethod) {
-                                var variables = movieClip.variables;
-                                var queryString = '';
-                                for (var key in variables) {
-                                    var value = variables[key];
-                                    if (value == null) {
-                                        value = '';
-                                    }
-                                    queryString += '&' + key + '=' + value;
-                                }
-
-                                if (query != '' && queryString != '') {
-                                    queryString = query + queryString.slice(1);
-                                }
-                                url += queryString;
-                            }
-
-                            if (LoadVariablesFlag) {
-                                movieClip.loadVariables(url, target, method);
-                            } else if (LoadTargetFlag) {
-                                if (target instanceof MovieClip) {
-                                    target.loadMovie(url, null, SendVarsMethod);
-                                } else {
-                                    movieClip.loadMovie(url, target, SendVarsMethod);
-                                }
-
-                            } else {
-                                movieClip.getURL(url, target, method);
-                            }
-                        } else {
-                            movieClip.unloadMovie(target);
-                        }
-                    }
+                    _this.ActionGetURL2(stack, aScript, movieClip);
                     break;
-                // GetProperty
                 case 0x22:
-                    var index = stack.pop();
-                    if (!_isNaN(index))
-                        index = _floor(index);
-                    var target = stack.pop();
-                    var value = undefined;
-
-                    value = _this.getVariable(index);
-                    if (value == undefined && movieClip) {
-                        targetMc = movieClip;
-                        if (target != null) {
-                            targetMc = movieClip.getMovieClip(target);
-                            if (!targetMc)
-                                break;
-                        }
-                        value = targetMc.getProperty(index);
-                    }
-
-                    stack[stack.length] = value;
+                    _this.ActionGetProperty(stack, movieClip);
                     break;
-                // GoToFrame2
                 case 0x9F:
-                    var SceneBiasFlag = aScript.SceneBiasFlag;
-                    var PlayFlag = aScript.PlayFlag; // 0=stop, 1=play
-                    if (SceneBiasFlag == 1)
-                        var SceneBias = aScript.SceneBias;
-
-                    var frame = stack.pop();
-                    if (frame == null || frame == undefined || movieClip == null)
-                        break;
-
-                    if (_isNaN(frame)) {
-                        var splitData = frame.split(':');
-                        if (splitData.length > 1) {
-                            var targetMc = movieClip.getMovieClip(splitData[0]);
-                            if (targetMc != null)
-                                frame = targetMc.getLabel(splitData[1]);
-                        } else {
-                            frame = movieClip.getLabel(splitData[0]);
-                        }
-                    }
-
-                    if (typeof frame == 'number' && frame > 0) {
-                        if (PlayFlag) {
-                            if (!movieClip.stopFlag)
-                                movieClip.setNextFrame(frame);
-                            movieClip.play();
-                        } else {
-                            if (movieClip.stopFlag)
-                                movieClip.setNextFrame(frame);
-                            movieClip.stop();
-                        }
-                    }
+                    _this.ActionGoToFrame2(stack, aScript, movieClip);
                     break;
-                case 0x20: // SetTarget2
-                    var target = stack.pop();
-                    if (movieClip == null)
-                        movieClip = mc;
-                    movieClip = movieClip.getMovieClip(target);
+                case 0x20:
+                    movieClip = _this.ActionSetTarget2(stack, movieClip, mc);
                     break;
-                // SetProperty
                 case  0x23:
-                    var value = stack.pop();
-                    var index = stack.pop();
-                    if (!_isNaN(index))
-                        index = _floor(index);
-                    var target = stack.pop();
-
-                    if (movieClip) {
-                        var targetMc = movieClip;
-                        if (target != null) {
-                            targetMc = movieClip.getMovieClip(target);
-                            if (targetMc == null) {
-                                break;
-                            }
-                        }
-                        targetMc.setProperty(index, value);
-                    }
+                    _this.ActionSetProperty(stack, movieClip);
                     break;
-                // StartDrag
                 case 0x27:
-                    var target = stack.pop();
-                    var lock = stack.pop();
-                    var constrain = stack.pop();
-                    var y2 = null;
-                    var x2 = null;
-                    var y1 = null;
-                    var x1 = null;
-                    if (constrain) {
-                        y2 = stack.pop();
-                        x2 = stack.pop();
-                        y1 = stack.pop();
-                        x1 = stack.pop();
-                    }
-
-                    var targetMc = movieClip;
-                    if (target instanceof MovieClip)
-                        targetMc = target;
-
-                    if (typeof target == "string" && target)
-                        console.log('StartDrag:String', target);
-
-                    if (targetMc != null)
-                        targetMc.startDrag(lock, x1, y1, x2, y2);
-
+                    _this.ActionStartDrag(stack, movieClip);
                     break;
-                // WaitForFrame2
-                case 0x8D:
-                    var frame = stack.pop();
-                    var skipCount = aScript.skipCount;
+                case 0x8D: // ActionWaitForFrame2
+                    stack.pop();
                     break;
-                // CloneSprite
                 case 0x24:
-                    var depth = _parseFloat(stack.pop());
-                    var target = stack.pop();
-                    var source = stack.pop();
-                    if (movieClip)
-                        movieClip.duplicateMovieClip(target, source, depth);
+                    _this.ActionCloneSprite(stack, movieClip);
                     break;
-                // RemoveSprite
                 case 0x25:
-                    var target = stack.pop();
-                    if (movieClip)
-                        movieClip.removeMovieClip(target);
+                    _this.ActionRemoveSprite(stack, movieClip);
                     break;
-                // EndDrag
                 case 0x28:
-                    if (movieClip)
-                        movieClip.stopDrag();
+                    _this.ActionEndDrag(movieClip);
                     break;
-
-                // ユーティリティ ***********************************
-                // GetTime
                 case 0x34:
-                    var now = new _Date();
-                    stack[stack.length] = now.getTime() - StartDate.getTime();
+                    _this.ActionGetTime(stack);
                     break;
-                // RandomNumber
                 case 0x30:
-                    var maximum = stack.pop();
-                    var randomNumber = _floor(_random() * maximum);
-                    stack[stack.length] = randomNumber;
+                    _this.ActionRandomNumber(stack);
                     break;
-                // Trace
                 case 0x26:
-                    var value = stack.pop();
-                    if (typeof value == 'string') {
-                        value = value.split('@LFCR').join('\n');
-                    } else if (value instanceof MovieClip) {
-                        value = value.getTarget();
-                    }
-                    console.log('[trace] ' + value);
+                    _this.ActionTrace(stack);
                     break;
                 case 0x00:
                     break;
-                case 0x2D: // fscommand2
-                    var count = _parseFloat(stack.pop());
-                    var method = stack.pop();
-                    var now = new _Date();
-                    switch (method.toLowerCase()) {
-                        case 'getdateyear':
-                            stack[stack.length] = now.getFullYear();
-                            break;
-                        case 'getdatemonth':
-                            stack[stack.length] = now.getMonth() + 1;
-                            break;
-                        case 'getdateday':
-                            stack[stack.length] = now.getDate();
-                            break;
-                        case 'getdateweekday':
-                            stack[stack.length] = now.getDay();
-                            break;
-                        case 'gettimehours':
-                            stack[stack.length] = now.getHours();
-                            break;
-                        case 'gettimeminutes':
-                            stack[stack.length] = now.getMinutes();
-                            break;
-                        case 'gettimeseconds':
-                            stack[stack.length] = now.getSeconds();
-                            break;
-                        case 'startvibrate':
-                            stack.pop();
-                            stack.pop();
-                            stack.pop();
-                            stack[stack.length] = -1;
-                            break;
-                        case 'gettimezoneoffset':
-                            movieClip.setVariable(stack.pop(), now.toUTCString());
-                            movieClip.setVariable(stack.pop(), 0);
-                            break;
-                        case 'getlocalelongdate':
-                            movieClip.setVariable(stack.pop(), now.toLocaleDateString());
-                            movieClip.setVariable(stack.pop(), 0);
-                            break;
-                        case 'getlocaleshortdate':
-                            movieClip.setVariable(stack.pop(), now.toDateString());
-                            movieClip.setVariable(stack.pop(), 0);
-                            break;
-                        case 'getlocaletime':
-                            movieClip.setVariable(stack.pop(), now.toLocaleTimeString());
-                            movieClip.setVariable(stack.pop(), 0);
-                            break;
-                        case 'getnetworkname':
-                        case 'getdevice':
-                        case 'getdeviceid':
-                            movieClip.setVariable(stack.pop(), '');
-                            movieClip.setVariable(stack.pop(), -1);
-                            break;
-                        case 'getlanguage':
-                            var language = _navigator.userLanguage || _navigator.language || _navigator.browserLanguage || '';
-                            movieClip.setVariable(stack.pop(), language);
-                            movieClip.setVariable(stack.pop(), 0);
-                            break;
-                        case 'setsoftkeys':
-                            stack.pop();
-                            stack.pop();
-                            stack[stack.length] = -1;
-                            break;
-                        case 'fullscreen':
-                            var bool = stack.pop();
-                            stack[stack.length] = -1;
-                            break;
-                        case 'setquality':
-                        case 'getfreestagememory':
-                        case 'gettotalstagememory':
-                            stack.pop();
-                            stack[stack.length] = -1;
-                            break;
-                        default:
-                            stack[stack.length] = -1;
-                            break;
-                    }
+                case 0x2D:
+                    _this.ActionFsCommand2(stack, movieClip);
                     break;
 
-                // SWF 5 ***********************************
-                // CallMethod
+                // ********************************************
+                // SWF 5
+                // ********************************************
                 case 0x52:
-                    var method = stack.pop();
-                    var object = stack.pop();
-                    var count = _parseFloat(stack.pop());
-                    var params = [];
-                    for (; count--;)
-                        params[params.length] = stack.pop();
-
-                    value = undefined;
-                    if (object) {
-                        method = mc.checkMethod(method);
-
-                        var func = object[method];
-                        var caller = movieClip;
-                        if (!func && object instanceof MovieClip) {
-                            func = object.getVariable(method);
-                            if (func) {
-                                caller = object;
-                                object = func;
-                            }
-                        }
-
-                        if (func) {
-                            if (method == 'call' || method == 'apply') {
-                                caller = params.shift();
-                                func = object;
-                            }
-
-                            if ('cache' in func) {
-                                var paramCache = params;
-                                params = [];
-                                params[params.length] = func.cache;
-                                params[params.length] = caller;
-                                params[params.length] = paramCache;
-                            }
-
-                            value = func.apply(object, params);
-                        }
-                    }
-
-                    stack[stack.length] = value;
+                    _this.ActionCallMethod(stack, movieClip);
                     break;
-                // ConstantPool
-                case 0x88:
+                case 0x88: // ActionConstantPool
                     _this.constantPool = aScript.constantPool;
                     break;
-                // ActionCallFunction
                 case 0x3d:
-                    var FunctionName = stack.pop();
-                    var numArgs = _parseFloat(stack.pop());
-                    var params = [];
-                    for (; numArgs--;)
-                        params[params.length] = stack.pop();
-
-                    var ret = null;
-                    if (movieClip) {
-                        var FunctionName = movieClip.checkMethod(FunctionName);
-                        if (window[FunctionName]) {
-                            targetMc = movieClip;
-                            if (params[0] instanceof MovieClip)
-                                targetMc = params.shift();
-
-                            if (params.length > 0) {
-                                var obj = params.shift();
-                                var as = {};
-
-                                if (typeof obj == 'string')
-                                    as = targetMc.getVariable(obj);
-
-                                if (as instanceof Function) {
-                                    var AS = as.cache;
-                                    params.unshift(function(){
-                                        AS.initVariable(arguments);
-                                        AS.execute(targetMc);
-                                    });
-                                } else {
-                                    params.unshift(obj);
-                                }
-                            }
-
-                            ret = window[FunctionName].apply(window, params);
-                        } else if (movieClip[FunctionName]) {
-                            ret = movieClip[FunctionName].apply(movieClip, params);
-                        } else {
-                            var func = movieClip.getVariable(FunctionName);
-                            if (!func) {
-                                var scope = _this.scope;
-                                if (scope)
-                                    func = scope.getVariable(FunctionName);
-                            }
-
-                            if (func)
-                                ret = func(func.cache, movieClip, params);
-                        }
-                        stack[stack.length] = ret;
-                    }
+                    _this.ActionCallFunction(stack, movieClip);
                     break;
-                // ActionDefineFunction
                 case 0x9b:
-                    var as = aScript.ActionScript;
-                    var scope = _this.scope;
-                    as.cache.scope = (scope) ? scope : movieClip;
-                    var FunctionName = aScript.FunctionName;
-                    if (FunctionName) {
-                        movieClip.setVariable(FunctionName, as);
-                    } else {
-                        stack[stack.length] = as;
-                    }
+                    _this.ActionDefineFunction(stack, aScript, movieClip);
                     break;
-                // ActionDefineLocal
                 case 0x3c:
-                    var value = stack.pop();
-                    var name = stack.pop();
-                    if (movieClip)
-                        movieClip.setVariable(name, value);
+                    _this.ActionDefineLocal(stack, movieClip);
                     break;
-                // ActionDefineLocal2
                 case 0x41:
-                    var name = stack.pop();
-                    if (movieClip)
-                        movieClip.setVariable(name, undefined);
+                    _this.ActionDefineLocal2(stack, movieClip);
                     break;
-                // ActionDelete
                 case 0x3a:
-                    var name = stack.pop();
-                    var object = stack.pop();
-                    if (object instanceof MovieClip)
-                        object.setVariable(name, undefined);
+                    _this.ActionDelete(stack);
                     break;
-                // ActionDelete2
                 case 0x3b:
-                    var name = stack.pop();
-                    if (movieClip)
-                        movieClip.setVariable(name, undefined);
+                    _this.ActionDelete2(stack, movieClip);
                     break;
-                // ActionEnumerate
                 case 0x46:
-                    var path = stack.pop();
-                    stack[stack.length] = null;
-                    if (movieClip) {
-                        var targetMc = movieClip.getMovieClip(path);
-                        if (targetMc != null) {
-                            var variables = targetMc.variables;
-                            for (var name in variables)
-                                stack[stack.length] = name;
-                        }
-                    }
+                    _this.ActionEnumerate(stack, movieClip);
                     break;
-                // ActionEquals2
                 case 0x49:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    var A = a;
-                    if (a instanceof MovieClip)
-                        A = a.getTarget();
-
-                    var B = b;
-                    if (b instanceof MovieClip)
-                        B = b.getTarget();
-
-                    stack[stack.length] = (B == A);
+                    _this.ActionEquals2(stack);
                     break;
-                // ActionGetMember
                 case 0x4e:
-                    var name = stack.pop();
-                    var object = stack.pop();
-                    var scope = _this.scope;
-
-                    if (typeof object == 'string') {
-                        var mc = movieClip.getMovieClip(object);
-                        if (mc == undefined && scope)
-                            mc = scope.getMovieClip(object);
-                        if (mc instanceof MovieClip)
-                            object = mc;
-
-                    }
-
-                    var property = undefined;
-                    if (object instanceof Object) {
-                        if ('getProperty' in object) {
-                            if (property == undefined)
-                                property = object.getProperty(name);
-                            if (property == undefined && scope)
-                                property = scope.getProperty(name);
-                            if (property == undefined) {
-                                var parent = movieClip.getParent();
-                                if (parent)
-                                    property = parent.getMovieClip(name);
-                            }
-                        } else {
-                            if (object instanceof NamedNodeMap) {
-                                object = object.getNamedItem(name);
-                                name = 'value';
-                            }
-
-                            if (name == 'childNodes') {
-                                var childNodes = object[name];
-                                var length = childNodes.length;
-                                property = [];
-                                for (var i = 0; i < length; i++) {
-                                    var node = childNodes[i];
-                                    if (node.nodeType != 1)
-                                        continue;
-                                    property[property.length] = node;
-                                }
-                            } else {
-                                property = object[name];
-                                if (property == undefined)
-                                    property = _this.getVariable(name);
-                            }
-                        }
-                    } else if (object != undefined) {
-                        property = object[name];
-                    }
-
-                    stack[stack.length] = property;
-
+                    _this.ActionGetMember(stack, movieClip);
                     break;
-                // ActionInitArray
                 case 0x42:
-                    var number = stack.pop();
-                    var array = [];
-                    for (; number--;)
-                        array[array.length] = stack.pop();
-                    stack[stack.length] = array;
+                    _this.ActionInitArray(stack);
                     break;
-                // ActionInitObject
                 case 0x43:
-                    var number = stack.pop();
-                    var object = {};
-                    for (; number--;) {
-                        var value = stack.pop();
-                        var property = stack.pop();
-                        object[property] = value;
-                    }
-                    stack[stack.length] = object;
+                    _this.ActionInitObject(stack);
                     break;
-                // ActionNewMethod
                 case 0x53:
-                    var method = stack.pop();
-                    var object = stack.pop();
-                    var number = stack.pop();
-                    var params = [];
-                    for (; number--;)
-                        params[params.length] = stack.pop();
-
-                    var constructor = undefined;
-                    if (method == '') {
-                        constructor = object.apply(object, params);
-                    } else if (object in window) {
-                        constructor = new window[method](params);
-                    } else if (method in object) {
-                        var func = object[method]
-                        if (func instanceof Function && 'cache' in func) {
-                            var as = function ActionScript(as, mc, args) {
-                                as.initVariable(args);
-                                if (as.initAction)
-                                    as.variables['this'] = this;
-                                return as.execute(mc);
-                            };
-
-                            var proto = func.prototype;
-                            for (var prop in proto)
-                                as.prototype[prop] = proto[prop];
-
-                            func.cache.scope = movieClip;
-                            constructor = new as(func.cache, movieClip, params);
-                        } else {
-                            constructor = new func();
-                        }
-                    }
-                    stack[stack.length] = constructor;
+                    _this.ActionNewMethod(stack, movieClip);
                     break;
-                // ActionNewObject
                 case 0x40:
-                    var object = stack.pop();
-                    var numArgs = _parseFloat(stack.pop());
-                    var params = [];
-                    for (; numArgs--;)
-                        params[params.length] = stack.pop();
-
-                    var obj = {};
-                    if (object in window) {
-                        obj = new window[object];
-                    } else {
-                        switch (object) {
-                            case 'MovieClip':
-                                obj = new MovieClip();
-                                break;
-                            case 'Sound':
-                                obj = new Sound();
-                                obj.movieClip = movieClip;
-                                break;
-                            case 'XML':
-                                obj = new _XML(movieClip);
-                                break;
-                            default:
-                                if (movieClip) {
-                                    var func = movieClip.getVariable(object);
-                                    if (func instanceof Function && 'cache' in func) {
-                                        var as = function ActionScript(as, mc, args) {
-                                            as.initVariable(args);
-                                            if (as.initAction)
-                                                as.variables['this'] = this;
-                                            return as.execute(mc);
-                                        };
-
-                                        var proto = func.prototype;
-                                        for (var prop in proto)
-                                            as.prototype[prop] = proto[prop];
-
-                                        func.cache.scope = movieClip;
-                                        obj = new as(func.cache, movieClip, params);
-                                    } else {
-                                        obj = new func();
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    stack[stack.length] = obj;
+                    _this.ActionNewObject(stack, movieClip);
                     break;
-                // ActionSetMember
                 case 0x4f:
-                    var value = stack.pop();
-                    var name = stack.pop();
-                    var object = stack.pop();
-
-                    if (object == null)
-                        break;
-
-                    if (typeof object == 'string') {
-                        var mc = movieClip.getMovieClip(object);
-                        if (mc)
-                            object = mc;
-                    }
-
-                    if ('setProperty' in object) {
-                        object.setProperty(name, value);
-                    } else if (object instanceof Object) {
-                        object[name] = value;
-                    }
-
+                    _this.ActionSetMember(stack, movieClip);
                     break;
-                // ActionTargetPath
                 case 0x45:
-                    console.log('ActionTargetPath');
-                    var object = stack.pop();
-                    var path = null;
-                    if (object instanceof MovieClip) {
-                        path = object.getName();
-                        if (path != null) {
-                            for (;;) {
-                                var parent = object.getParent();
-                                if (parent == null) {
-                                    path = '/'+ path;
-                                    break;
-                                }
-
-                                var name = parent.getName();
-                                if (name == null) {
-                                    path = null;
-                                    break;
-                                }
-
-                                path = name +'/'+ path;
-                            }
-                        }
-                    }
-
-                    stack[stack.length] = path;
+                    _this.ActionTargetPath(stack, movieClip);
                     break;
-                // ActionWith
                 case 0x94:
-                    var Size = aScript.Size;
-                    var object = mc;
-                    if (Size)
-                        object = stack.pop();
-                    movieClip = object;
+                    movieClip = _this.ActionWith(stack, aScript.Size, mc);
                     break;
-                // ActionToNumber
                 case 0x4a:
-                    var object = stack.pop();
-                    stack[stack.length] = _parseFloat(object);
+                    _this.ActionToNumber(stack);
                     break;
-                // ActionToString
                 case 0x4b:
-                    var object = stack.pop();
-                    stack[stack.length] = object + '';
+                    _this.ActionToString(stack);
                     break;
-                // ActionTypeOf
                 case 0x44:
-                    var object = stack.pop();
-                    stack[stack.length] = (object instanceof MovieClip) ? 'movieclip' : typeof object;
+                    _this.ActionTypeOf(stack);
                     break;
-                // ActionAdd2
                 case 0x47:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = b+a;
+                    _this.ActionAdd2(stack);
                     break;
-                // ActionLess2
                 case 0x48:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = (b < a);
+                    _this.ActionLess2(stack);
                     break;
-                // ActionModulo
                 case 0x3f:
-                    var y = stack.pop();
-                    var x = stack.pop();
-                    stack[stack.length] = x % y;
+                    _this.ActionModulo(stack);
                     break;
-                // ActionBitAnd
                 case 0x60:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = x & y;
+                    _this.ActionBitAnd(stack);
                     break;
-                // ActionBitLShift
                 case 0x63:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = b << a;
+                    _this.ActionBitLShift(stack);
                     break;
-                // ActionBitOr
                 case 0x61:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = b | a;
+                    _this.ActionBitOr(stack);
                     break;
-                // ActionBitRShift
                 case 0x64:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = b >> a;
+                    _this.ActionBitRShift(stack);
                     break;
-                // ActionBitURShift
                 case 0x65:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = b >> a;
+                    _this.ActionBitURShift(stack);
                     break;
-                // ActionBitXor
                 case 0x62:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = a ^ b;
+                    _this.ActionBitXor(stack);
                     break;
-                // ActionDecrement
                 case 0x51:
-                    var value = _parseFloat(stack.pop());
-                    value--;
-                    stack[stack.length] = value;
+                    _this.ActionDecrement(stack);
                     break;
-                // ActionIncrement
                 case 0x50:
-                    var value = _parseFloat(stack.pop());
-                    value++;
-                    stack[stack.length] = value;
+                    _this.ActionIncrement(stack);
                     break;
-                // ActionPushDuplicate
                 case 0x4c:
-                    var value = stack[0];
-                    stack[stack.length] = value;
+                    _this.ActionPushDuplicate(stack);
                     break;
-                // ActionReturnActionReturn
-                case 0x3e:
+                case 0x3e: // ActionReturnActionReturn
                     return stack.pop();
-                    break;
-                // ActionStackSwap
                 case 0x4d:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = a;
-                    stack[stack.length] = b;
+                    _this.ActionStackSwap(stack);
                     break;
-                // ActionStoreRegister
                 case 0x87:
-                    var RegisterNumber = aScript.RegisterNumber;
-                    var value = stack[stack.length-1];
-                    _this.params[RegisterNumber] = value;
+                    _this.ActionStoreRegister(stack, aScript.RegisterNumber);
                     break;
 
-                // SWF 6 ***********************************
-                // ActionInstanceOf
+                // ********************************************
+                // SWF 6
+                // ********************************************
                 case 0x54:
-                    var constr = stack.pop();
-                    var object = stack.pop();
-                    stack[stack.length] = (object instanceof constr) ? 1 : 0;
+                    _this.ActionInstanceOf(stack);
                     break;
-                // ActionEnumerate2
                 case 0x55:
-                    var object = stack.pop();
-                    stack[stack.length] = null;
-
-                    if (object instanceof MovieClip)
-                        object = object.variables;
-
-                    if (typeof object == "object") {
-                        for (var name in object)
-                            stack[stack.length] = name;
-                    }
+                    _this.ActionEnumerate2(stack);
                     break;
-                // ActionStrictEquals
                 case 0x66:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = (b === a);
+                    _this.ActionStrictEquals(stack);
                     break;
-                // ActionGreater
-                case 0x67:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = (b > a);
-                    break;
-                // ActionStringGreater
-                case 0x68:
-                    var a = stack.pop();
-                    var b = stack.pop();
-                    stack[stack.length] = (b > a);
+                case 0x67: // ActionGreater
+                case 0x68: // ActionStringGreater
+                    _this.ActionGreater(stack);
                     break;
 
-                // SWF 7 ***********************************
-                // ActionDefineFunction2
-                case 0x8e:
-                    var as = aScript.ActionScript;
-                    var scope = _this.scope;
-                    as.cache.scope = (scope) ? scope : movieClip;
-                    var FunctionName = aScript.FunctionName;
-                    if (FunctionName) {
-                        movieClip.setVariable(FunctionName, as);
-                    } else {
-                        stack[stack.length] = as;
-                    }
+                // ********************************************
+                // SWF 7
+                // ********************************************
+                case 0x8e: // ActionDefineFunction2
+                    _this.ActionDefineFunction(stack, aScript, movieClip);
                     break;
-                // ActionExtends
                 case 0x69:
-                    console.log('ActionExtends');
-                    var superClass = stack.pop();
-                    var subClass = stack.pop();
-                    if (superClass && subClass) {
-                        subClass.prototype = {};
-                        subClass.prototype = superClass.prototype;
-                        subClass.constructor = superClass;
-                    }
+                    _this.ActionExtends(stack);
                     break;
-                // ActionCastOp
                 case 0x2b:
-                    console.log('ActionCastOp');
-                    var object = stack.pop();
-                    var func = stack.pop();
-                    if (object == '') {
-                        stack[stack.length] = null;
-                    } else {
-                        stack[stack.length] = null;
-                    }
+                    _this.ActionCastOp(stack);
                     break;
-                // ActionImplementsOp
                 case 0x2c:
-                    console.log('ActionImplementsOp');
-                    var func = stack.pop();
-                    var count = stack.pop();
-                    var params = [];
-                    for (; count--;)
-                        params[params.length] = stack.pop();
-                    stack[stack.length] = null;
+                    _this.ActionImplementsOp(stack);
                     break;
-                // ActionTry
                 case 0x8f:
-                    console.log('ActionTry');
+                    _this.ActionTry();
                     break;
-                // ActionThrow
                 case 0x2a:
-                    throw new Error(stack.pop());
+                    _this.ActionThrow();
                     break;
 
                 // SWF 9 ***********************************
@@ -7074,12 +6258,1615 @@ if (!('swf2js' in window)){(function(window)
                 case 0x82:
                     console.log('DoABC');
                     break;
-
                 default:
                     console.log('[actionScript] '+actionCode);
                     break;
             }
         }
+    };
+
+    /**
+     * @param mc
+     * @param frame
+     */
+    ActionScript.prototype.ActionGotoFrame = function(mc, frame)
+    {
+        if (mc instanceof MovieClip) {
+            mc.stop();
+            mc.setNextFrame(frame);
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionNextFrame = function(mc)
+    {
+        if (mc instanceof MovieClip) {
+            mc.nextFrame();
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionPreviousFrame = function(mc)
+    {
+        if (mc instanceof MovieClip) {
+            mc.prevFrame();
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionPlay = function(mc)
+    {
+        if (mc instanceof MovieClip) {
+            mc.play();
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionStop = function(mc)
+    {
+        if (mc instanceof MovieClip) {
+            mc.stop();
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionStopSounds = function(mc)
+    {
+        if (mc instanceof MovieClip) {
+            mc.stopAllSounds();
+        }
+    };
+
+    /**
+     * @param movieClip
+     * @param mc
+     * @param target
+     * @returns {*}
+     */
+    ActionScript.prototype.ActionSetTarget = function(movieClip, mc, target)
+    {
+        if (target !== "") {
+            var targetMc = movieClip;
+            if (!targetMc) {
+                targetMc = mc;
+            }
+            return targetMc.getMovieClip(target);
+        } else {
+            if (mc.active) {
+                return mc;
+            } else {
+                return undefined;
+            }
+        }
+    };
+
+    /**
+     * @param mc
+     * @param label
+     */
+    ActionScript.prototype.ActionGoToLabel = function(mc, label)
+    {
+        if (mc instanceof MovieClip) {
+            var frame = _parseFloat(mc.getLabel(label));
+            mc.stop();
+            if (typeof frame === "number") {
+                mc.setNextFrame(frame);
+            }
+        }
+    };
+
+    /**
+     * @param mc
+     * @param url
+     * @param target
+     */
+    ActionScript.prototype.ActionGetURL = function(mc, url, target)
+    {
+        if (mc instanceof MovieClip) {
+            mc.getURL(url, target);
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionAdd = function(stack)
+    {
+        var _this = this;
+        var a = _this.operationValue(stack.pop());
+        var b = _this.operationValue(stack.pop());
+        stack[stack.length] = a + b;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionSubtract = function(stack)
+    {
+        var _this = this;
+        var a = _this.operationValue(stack.pop());
+        var b = _this.operationValue(stack.pop());
+        stack[stack.length] = b - a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionMultiply = function(stack)
+    {
+        var _this = this;
+        var a = _this.operationValue(stack.pop());
+        var b = _this.operationValue(stack.pop());
+        stack[stack.length] = a * b;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionDivide = function(stack)
+    {
+        var _this = this;
+        var a = _this.operationValue(stack.pop());
+        var b = _this.operationValue(stack.pop());
+        stack[stack.length] = b / a;
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionEquals = function(stack, version)
+    {
+        var _this = this;
+        var a = _this.calc(stack.pop());
+        var b = _this.calc(stack.pop());
+        if (version > 4) {
+            stack[stack.length] = (a == b);
+        } else {
+            stack[stack.length] = (a == b) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionLess = function(stack, version)
+    {
+        var _this = this;
+        var a = _this.calc(stack.pop());
+        var b = _this.calc(stack.pop());
+        if (version > 4) {
+            stack[stack.length] = (b < a);
+        } else {
+            stack[stack.length] = (b < a) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionAnd = function(stack, version)
+    {
+        var _this = this;
+        var a = _this.calc(stack.pop());
+        var b = _this.calc(stack.pop());
+        if (version > 4) {
+            stack[stack.length] = (a != 0 && b != 0);
+        } else {
+            stack[stack.length] = (a != 0 && b != 0) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionOr = function(stack, version)
+    {
+        var _this = this;
+        var a = _this.calc(stack.pop());
+        var b = _this.calc(stack.pop());
+        if (version > 4) {
+            stack[stack.length] = (a != 0 || b != 0);
+        } else {
+            stack[stack.length] = (a != 0 || b != 0) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionNot = function(stack, version)
+    {
+        var _this = this;
+        var a = _this.calc(stack.pop());
+        if (version > 4) {
+            stack[stack.length] = (a == 0);
+        } else {
+            stack[stack.length] = (a == 0) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param version
+     */
+    ActionScript.prototype.ActionStringEquals = function(stack, version)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        if (version > 4) {
+            stack[stack.length] = (b == a);
+        } else {
+            stack[stack.length] = (b == a) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStringLength = function(stack)
+    {
+        var value = stack.pop();
+        value = this.valueToString(value);
+        var src = _escape(value.toString());
+        var length = 0;
+        var sLen = src.length;
+        for (var i = 0; i < sLen; i++, length++) {
+            if (src.charAt(i) === "%") {
+                if (src.charAt(++i) === "u") {
+                    i += 3;
+                    length++;
+                }
+                i++;
+            }
+        }
+        stack[stack.length] = length;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStringAdd = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        if (a === null) {
+            a = "";
+        }
+        if (b === null) {
+            b = "";
+        }
+        stack[stack.length] = b +""+ a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStringExtract = function(stack)
+    {
+        var count = stack.pop();
+        var index = stack.pop();
+        var string = stack.pop();
+        index--;
+        if (index < 0) {
+            index = 0;
+        }
+        if (typeof string !== "string") {
+            string += "";
+        }
+        stack[stack.length] = (count < 0) ? string.substr(index) : string.substr(index, count);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStringLess = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        if (version > 4) {
+            stack[stack.length] = (b < a);
+        } else {
+            stack[stack.length] = (b < a) ? 1 : 0;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     * @param values
+     */
+    ActionScript.prototype.ActionPush = function(stack, mc, values)
+    {
+        var _this = this;
+        var length = values.length;
+        var params = _this.params;
+        for (var i = 0; i < length; i++) {
+            var value = values[i];
+            if (value instanceof Object) {
+                var key = value.key;
+                value = undefined;
+                if (key in params) {
+                    var name = params[key];
+                    if (typeof name === "string") {
+                        value = _this.getVariable(name);
+                        if (value === undefined) {
+                            value = mc.getVariable(name);
+                        }
+                    }
+                    if (value === undefined) {
+                        value = name;
+                    }
+                }
+            }
+            stack[stack.length] = value;
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionAsciiToChar = function(stack)
+    {
+        var value = stack.pop();
+        stack[stack.length] = _fromCharCode(value);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionCharToAscii = function(stack)
+    {
+        var value = stack.pop();
+        value = this.valueToString(value);
+        stack[stack.length] = value.charCodeAt(0);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionToInteger = function(stack)
+    {
+        var value = stack.pop();
+        stack[stack.length] = _floor(value);
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionCall = function(stack, mc)
+    {
+        var value = stack.pop();
+        if (mc) {
+            value = this.valueToString(value);
+            var splitData = value.split(":");
+            var frame;
+            var label = splitData[0];
+            var targetMc = mc;
+            if (splitData.length > 1) {
+                targetMc = mc.getMovieClip(splitData[0]);
+                label = splitData[1];
+            }
+            if (targetMc instanceof MovieClip) {
+                frame = (typeof label === "number") ? label : targetMc.getLabel(label);
+                targetMc.executeActions(frame);
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     * @param offset
+     * @param index
+     * @returns {*}
+     */
+    ActionScript.prototype.ActionIf = function(stack, offset, index)
+    {
+        var condition = stack.pop();
+        switch (typeof condition) {
+            case "boolean":
+                break;
+            case "string":
+                if (!_isNaN(condition)) {
+                    condition = _parseFloat(condition);
+                }
+                break;
+        }
+        if (condition) {
+            return offset;
+        }
+        return index;
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     * @returns {undefined}
+     */
+    ActionScript.prototype.ActionGetVariable = function(stack, mc)
+    {
+        var _this = this;
+        var name = stack.pop();
+        var value;
+        if (name instanceof MovieClip) {
+            value = name;
+        } else {
+            value = _this.getVariable(name);
+            if (value === undefined && mc) {
+                value = mc.getProperty(name);
+            }
+            if (value === undefined) {
+                var scope = _this.scope;
+                if (scope) {
+                    value = scope.getProperty(name);
+                }
+            }
+        }
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionSetVariable = function(stack, mc)
+    {
+        var _this = this;
+        var value = stack.pop();
+        var name = stack.pop();
+        var scope = _this.scope;
+        if (scope) {
+            scope.setProperty(name, value);
+        } else if (mc) {
+            mc.setProperty(name, value);
+        }
+    };
+
+    /**
+     * @param stack
+     * @param aScript
+     * @param mc
+     */
+    ActionScript.prototype.ActionGetURL2 = function(stack, aScript, mc)
+    {
+        var target = stack.pop();
+        var value = stack.pop();
+        var LoadVariablesFlag = aScript.LoadVariablesFlag; // 0=none, 1=LoadVariables
+        var LoadTargetFlag = aScript.LoadTargetFlag; // 0=web, 1=Sprite
+        var SendVarsMethod = aScript.SendVarsMethod; // 0=NONE, 1=GET, 2=POST
+        var method = "GET";
+        if (SendVarsMethod === 2) {
+            method = "POST";
+        }
+
+        var url;
+        if (mc instanceof MovieClip) {
+            if (value) {
+                value = this.valueToString(value);
+                var urls = value.split("?");
+                var uLen = urls.length;
+                var query = "";
+                if (uLen === 1) {
+                    query = "?";
+                }
+
+                if (uLen > 2) {
+                    url = urls[0] + "?";
+                    url = url + urls[1];
+                    for (var u = 2; u < uLen; u++) {
+                        var params = urls[u];
+                        url = url + "&" + params;
+                    }
+                } else {
+                    url = value;
+                }
+
+                // local variables
+                if (SendVarsMethod) {
+                    var variables = mc.variables;
+                    var queryString = "";
+                    for (var key in variables) {
+                        if (!variables.hasOwnProperty(key)) {
+                            continue;
+                        }
+                        var val = variables[key];
+                        if (val === null) {
+                            val = "";
+                        }
+                        queryString += "&" + key + "=" + val;
+                    }
+
+                    if (query !== "" && queryString !== "") {
+                        queryString = query + queryString.slice(1);
+                    }
+                    url += queryString;
+                }
+
+                if (LoadVariablesFlag) {
+                    mc.loadVariables(url, target, method);
+                } else if (LoadTargetFlag) {
+                    if (target instanceof MovieClip) {
+                        target.loadMovie(url, null, SendVarsMethod);
+                    } else {
+                        mc.loadMovie(url, target, SendVarsMethod);
+                    }
+                } else {
+                    mc.getURL(url, target, method);
+                }
+            } else {
+                mc.unloadMovie(target);
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     * @returns {*}
+     */
+    ActionScript.prototype.ActionGetProperty = function(stack, mc)
+    {
+        var index = stack.pop();
+        var target = stack.pop();
+        if (!_isNaN(index)) {
+            index = _floor(index);
+        }
+
+        var _this = this;
+        var value = _this.getVariable(index);
+        if (value === undefined && mc) {
+            var targetMc = mc;
+            if (target) {
+                if (typeof target !== "string") {
+                    target += "";
+                }
+                targetMc = mc.getMovieClip(target);
+            }
+            if (targetMc instanceof MovieClip) {
+                value = targetMc.getProperty(index);
+            }
+        }
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     * @param aScript
+     * @param mc
+     */
+    ActionScript.prototype.ActionGoToFrame2 = function(stack, aScript, mc)
+    {
+        var SceneBiasFlag = aScript.SceneBiasFlag;
+        var PlayFlag = aScript.PlayFlag; // 0=stop, 1=play
+        if (SceneBiasFlag === 1) {
+            var SceneBias = aScript.SceneBias;
+        }
+
+        var frame = stack.pop();
+        if (frame && mc) {
+            if (_isNaN(frame)) {
+                var splitData = frame.split(":");
+                if (splitData.length > 1) {
+                    var targetMc = mc.getMovieClip(splitData[0]);
+                    if (targetMc) {
+                        frame = targetMc.getLabel(splitData[1]);
+                    }
+                } else {
+                    frame = mc.getLabel(splitData[0]);
+                }
+            }
+
+            if (typeof frame === "number" && frame > 0) {
+                if (PlayFlag) {
+                    if (!mc.stopFlag) {
+                        mc.setNextFrame(frame);
+                    }
+                    mc.play();
+                } else {
+                    mc.setNextFrame(frame);
+                    mc.stop();
+                }
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     * @param movieClip
+     * @param mc
+     * @returns {*}
+     */
+    ActionScript.prototype.ActionSetTarget2 = function(stack, movieClip, mc)
+    {
+        var target = stack.pop();
+        if (!movieClip) {
+            movieClip = mc;
+        }
+        return movieClip.getMovieClip(target);
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     * @constructor
+     */
+    ActionScript.prototype.ActionSetProperty = function(stack, mc)
+    {
+        var value = stack.pop();
+        var index = stack.pop();
+        var target = stack.pop();
+        if (!_isNaN(index)) {
+            index = _floor(index);
+        }
+        if (mc) {
+            var targetMc = mc;
+            if (target !== undefined) {
+                targetMc = mc.getMovieClip(target);
+            }
+            if (targetMc instanceof MovieClip) {
+                targetMc.setProperty(index, value);
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionStartDrag = function(stack, mc)
+    {
+        var target = stack.pop();
+        var lock = stack.pop();
+        var constrain = stack.pop();
+        var y2 = null;
+        var x2 = null;
+        var y1 = null;
+        var x1 = null;
+        if (constrain) {
+            y2 = stack.pop();
+            x2 = stack.pop();
+            y1 = stack.pop();
+            x1 = stack.pop();
+        }
+
+        var targetMc = mc;
+        if (target instanceof MovieClip) {
+            targetMc = target;
+        }
+
+        if (typeof target === "string" && target) {
+            console.log('StartDrag:String', target);
+        }
+
+        if (targetMc instanceof MovieClip) {
+            targetMc.startDrag(lock, x1, y1, x2, y2);
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionCloneSprite = function(stack, mc)
+    {
+        var depth = _parseFloat(stack.pop());
+        var target = stack.pop();
+        var source = stack.pop();
+        if (mc) {
+            mc.duplicateMovieClip(target, source, depth);
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionRemoveSprite = function(stack, mc)
+    {
+        var target = stack.pop();
+        if (mc) {
+            mc.removeMovieClip(target);
+        }
+    };
+
+    /**
+     * @param mc
+     */
+    ActionScript.prototype.ActionEndDrag = function(mc)
+    {
+        if (mc) {
+            mc.stopDrag();
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionGetTime = function(stack)
+    {
+        var now = new Date();
+        stack[stack.length] = now.getTime() - StartDate.getTime();
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionRandomNumber = function(stack)
+    {
+        var maximum = stack.pop();
+        var randomNumber = _floor(_random() * maximum);
+        stack[stack.length] = randomNumber;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionTrace = function(stack)
+    {
+        var value = stack.pop();
+        if (typeof value === "string") {
+            value = value.split("@LFCR").join("\n");
+        } else if (value instanceof MovieClip) {
+            value = value.getTarget();
+        }
+        console.log("[trace] " + value);
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionFsCommand2 = function(stack, mc)
+    {
+        var count = _parseFloat(stack.pop());
+        var method = stack.pop();
+        var now = new Date();
+        switch (method.toLowerCase()) {
+            case "getdateyear":
+                stack[stack.length] = now.getFullYear();
+                break;
+            case "getdatemonth":
+                stack[stack.length] = now.getMonth() + 1;
+                break;
+            case "getdateday":
+                stack[stack.length] = now.getDate();
+                break;
+            case "getdateweekday":
+                stack[stack.length] = now.getDay();
+                break;
+            case "gettimehours":
+                stack[stack.length] = now.getHours();
+                break;
+            case "gettimeminutes":
+                stack[stack.length] = now.getMinutes();
+                break;
+            case "gettimeseconds":
+                stack[stack.length] = now.getSeconds();
+                break;
+            case "startvibrate":
+                stack.pop();
+                stack.pop();
+                stack.pop();
+                stack[stack.length] = -1;
+                break;
+            case "gettimezoneoffset":
+                mc.setVariable(stack.pop(), now.toUTCString());
+                mc.setVariable(stack.pop(), 0);
+                break;
+            case "getlocalelongdate":
+                mc.setVariable(stack.pop(), now.toLocaleDateString());
+                mc.setVariable(stack.pop(), 0);
+                break;
+            case "getlocaleshortdate":
+                mc.setVariable(stack.pop(), now.toDateString());
+                mc.setVariable(stack.pop(), 0);
+                break;
+            case "getlocaletime":
+                mc.setVariable(stack.pop(), now.toLocaleTimeString());
+                mc.setVariable(stack.pop(), 0);
+                break;
+            case "getnetworkname":
+            case "getdevice":
+            case "getdeviceid":
+                mc.setVariable(stack.pop(), '');
+                mc.setVariable(stack.pop(), -1);
+                break;
+            case "getlanguage":
+                var language = _navigator.userLanguage || _navigator.language || _navigator.browserLanguage || '';
+                mc.setVariable(stack.pop(), language);
+                mc.setVariable(stack.pop(), 0);
+                break;
+            case "setsoftkeys":
+                stack.pop();
+                stack.pop();
+                stack[stack.length] = -1;
+                break;
+            case "fullscreen":
+                var bool = stack.pop();
+                stack[stack.length] = -1;
+                break;
+            case "setquality":
+            case "getfreestagememory":
+            case "gettotalstagememory":
+                stack.pop();
+                stack[stack.length] = -1;
+                break;
+            default:
+                stack[stack.length] = -1;
+                break;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionCallMethod = function(stack, mc)
+    {
+        var method = stack.pop();
+        var object = stack.pop();
+        var count = _parseFloat(stack.pop());
+        var params = [];
+        for (; count--;) {
+            params[params.length] = stack.pop();
+        }
+
+        var value;
+        if (object) {
+            method = checkMethod(method);
+
+            var func = object[method];
+            var caller = mc;
+            if (!func && object instanceof MovieClip) {
+                func = object.getVariable(method);
+                if (func) {
+                    caller = object;
+                    object = func;
+                }
+            }
+
+            if (func) {
+                if (method === "call" || method === "apply") {
+                    caller = params.shift();
+                    func = object;
+                }
+
+                if ("cache" in func) {
+                    var paramCache = params;
+                    params = [];
+                    params[params.length] = func.cache;
+                    params[params.length] = caller;
+                    params[params.length] = paramCache;
+                }
+                value = func.apply(object, params);
+            }
+        }
+
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionCallFunction = function(stack, mc)
+    {
+        var _this = this;
+        var name = stack.pop();
+        var numArgs = _parseFloat(stack.pop());
+        var params = [];
+        for (; numArgs--;) {
+            params[params.length] = stack.pop();
+        }
+
+        var ret;
+        if (mc) {
+            name = checkMethod(name);
+            if (window[name]) {
+                var targetMc = mc;
+                if (params[0] instanceof MovieClip) {
+                    targetMc = params.shift();
+                }
+                if (params.length > 0) {
+                    var obj = params.shift();
+                    var as = {};
+                    if (typeof obj === "string") {
+                        as = targetMc.getVariable(obj);
+                    }
+                    if (as instanceof Function) {
+                        var AS = as.cache;
+                        params.unshift(function(){
+                            AS.initVariable(arguments);
+                            AS.execute(targetMc);
+                        });
+                    } else {
+                        params.unshift(obj);
+                    }
+                }
+
+                ret = window[name].apply(window, params);
+            } else if (mc[name]) {
+                ret = mc[name].apply(mc, params);
+            } else {
+                var func = mc.getVariable(name);
+                if (!func) {
+                    var scope = _this.scope;
+                    if (scope) {
+                        func = scope.getVariable(name);
+                    }
+                }
+                if (func) {
+                    ret = func(func.cache, mc, params);
+                }
+            }
+            stack[stack.length] = ret;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param aScript
+     * @param mc
+     */
+    ActionScript.prototype.ActionDefineFunction = function(stack, aScript, mc)
+    {
+        var as = aScript.ActionScript;
+        var scope = this.scope;
+        as.cache.scope = (scope) ? scope : mc;
+        var name = aScript.FunctionName;
+        if (name) {
+            mc.setVariable(name, as);
+        } else {
+            stack[stack.length] = as;
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionDefineLocal = function(stack, mc)
+    {
+        var value = stack.pop();
+        var name = stack.pop();
+        if (mc) {
+            mc.setVariable(name, value);
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionDefineLocal2 = function(stack, mc)
+    {
+        var name = stack.pop();
+        if (mc) {
+            mc.setVariable(name, undefined);
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionDelete = function(stack)
+    {
+        var name = stack.pop();
+        var object = stack.pop();
+        if (object instanceof MovieClip) {
+            object.setVariable(name, undefined);
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionDelete2 = function(stack, mc)
+    {
+        var name = stack.pop();
+        if (mc) {
+            mc.setVariable(name, undefined);
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionEnumerate = function(stack, mc)
+    {
+        var path = stack.pop();
+        stack[stack.length] = null;
+        if (mc) {
+            var targetMc = mc.getMovieClip(path);
+            if (targetMc instanceof MovieClip) {
+                var variables = targetMc.variables;
+                for (var name in variables) {
+                    if (!variables.hasOwnProperty(name)) {
+                        continue;
+                    }
+                    stack[stack.length] = name;
+                }
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionEquals2 = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        var A = a;
+        var B = b;
+        if (a instanceof MovieClip) {
+            A = a.getTarget();
+        }
+        if (b instanceof MovieClip) {
+            B = b.getTarget();
+        }
+        stack[stack.length] = (B == A);
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionGetMember = function(stack, mc)
+    {
+        var _this = this;
+        var name = stack.pop();
+        var object = stack.pop();
+        var scope = _this.scope;
+
+        if (typeof object === "string") {
+            var targetMc = mc.getMovieClip(object);
+            if (targetMc === undefined && scope) {
+                targetMc = scope.getMovieClip(object);
+            }
+            if (targetMc instanceof MovieClip) {
+                object = targetMc;
+            }
+        }
+
+        var property;
+        if (object instanceof Object) {
+            if ("getProperty" in object) {
+                if (property === undefined) {
+                    property = object.getProperty(name);
+                }
+                if (property === undefined && scope) {
+                    property = scope.getProperty(name);
+                }
+                if (property === undefined) {
+                    var parent = mc.getParent();
+                    if (parent) {
+                        property = parent.getMovieClip(name);
+                    }
+                }
+            } else {
+                if (object instanceof NamedNodeMap) {
+                    object = object.getNamedItem(name);
+                    name = "value";
+                }
+
+                if (name === "childNodes") {
+                    var childNodes = object[name];
+                    var length = childNodes.length;
+                    property = [];
+                    for (var i = 0; i < length; i++) {
+                        var node = childNodes[i];
+                        if (node.nodeType !== 1) {
+                            continue;
+                        }
+                        property[property.length] = node;
+                    }
+                } else {
+                    property = object[name];
+                    if (property === undefined) {
+                        property = _this.getVariable(name);
+                    }
+                }
+            }
+        } else if (object !== undefined) {
+            property = object[name];
+        }
+
+        stack[stack.length] = property;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionInitArray = function(stack)
+    {
+        var number = stack.pop();
+        var array = [];
+        for (; number--;) {
+            array[array.length] = stack.pop();
+        }
+        stack[stack.length] = array;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionInitObject = function(stack)
+    {
+        var number = stack.pop();
+        var object = {};
+        for (; number--;) {
+            var value = stack.pop();
+            var property = stack.pop();
+            object[property] = value;
+        }
+        stack[stack.length] = object;
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionNewMethod = function(stack, mc)
+    {
+        var method = stack.pop();
+        var object = stack.pop();
+        var number = stack.pop();
+        var params = [];
+        for (; number--;) {
+            params[params.length] = stack.pop();
+        }
+
+        var constructor;
+        if (method === "") {
+            constructor = object.apply(object, params);
+        } else if (object in window) {
+            constructor = new window[method](params);
+        } else if (method in object) {
+            var func = object[method];
+            constructor = this.CreateNewActionScript(func, mc, params);
+        }
+        stack[stack.length] = constructor;
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionNewObject = function(stack, mc)
+    {
+        var object = stack.pop();
+        var numArgs = _parseFloat(stack.pop());
+        var params = [];
+        for (; numArgs--;) {
+            params[params.length] = stack.pop();
+        }
+
+        var obj = {};
+        if (object in window) {
+            obj = new window[object]();
+        } else {
+            switch (object) {
+                case "MovieClip":
+                    obj = new MovieClip();
+                    break;
+                case "Sound":
+                    obj = new Sound();
+                    obj.movieClip = mc;
+                    break;
+                case "XML":
+                    obj = new Xml(mc);
+                    break;
+                default:
+                    if (mc) {
+                        var func = mc.getVariable(object);
+                        obj = this.CreateNewActionScript(func, mc, params);
+                    }
+                    break;
+            }
+        }
+        stack[stack.length] = obj;
+    };
+
+    /**
+     * @param Constr
+     * @param mc
+     * @param params
+     * @returns {*}
+     */
+    ActionScript.prototype.CreateNewActionScript = function(Constr, mc, params)
+    {
+        if (Constr instanceof Function && "cache" in Constr) {
+            var AS = function ActionScript(as, mc, args) {
+                as.initVariable(args);
+                if (as.initAction) {
+                    as.variables['this'] = this;
+                }
+                return as.execute(mc);
+            };
+
+            var proto = Constr.prototype;
+            for (var prop in proto) {
+                if (!proto.hasOwnProperty(prop)) {
+                    continue;
+                }
+                AS.prototype[prop] = proto[prop];
+            }
+
+            Constr.cache.scope = mc;
+            return new AS(Constr.cache, mc, params);
+        } else {
+            return new Constr();
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionSetMember = function(stack, mc)
+    {
+        var value = stack.pop();
+        var name = stack.pop();
+        var object = stack.pop();
+
+        if (object) {
+            if (typeof object === "string") {
+                var targetMc = mc.getMovieClip(object);
+                if (targetMc) {
+                    object = targetMc;
+                }
+            }
+
+            if ("setProperty" in object) {
+                object.setProperty(name, value);
+            } else if (object instanceof Object) {
+                object[name] = value;
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     * @param mc
+     */
+    ActionScript.prototype.ActionTargetPath = function(stack, mc)
+    {
+        console.log('ActionTargetPath');
+        var object = stack.pop();
+        var path = null;
+        if (object instanceof MovieClip) {
+            path = object.getName();
+            if (path !== null) {
+                for (;;) {
+                    var parent = object.getParent();
+                    if (parent === null) {
+                        path = "/"+ path;
+                        break;
+                    }
+
+                    var name = parent.getName();
+                    if (name === null) {
+                        path = null;
+                        break;
+                    }
+
+                    path = name +"/"+ path;
+                }
+            }
+        }
+        stack[stack.length] = path;
+    };
+
+    /**
+     * @param stack
+     * @param size
+     * @param mc
+     * @returns {*}
+     */
+    ActionScript.prototype.ActionWith = function(stack, size, mc)
+    {
+        var object = mc;
+        if (size) {
+            object = stack.pop();
+        }
+        return object;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionToNumber = function(stack)
+    {
+        var object = stack.pop();
+        stack[stack.length] = _parseFloat(object);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionToString = function(stack)
+    {
+        var object = stack.pop();
+        stack[stack.length] = this.valueToString(object);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionTypeOf = function(stack)
+    {
+        var object = stack.pop();
+        stack[stack.length] = (object instanceof MovieClip) ? "movieclip" : typeof object;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionAdd2 = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = b + a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionLess2 = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = (b < a);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionModulo = function(stack)
+    {
+        var y = stack.pop();
+        var x = stack.pop();
+        stack[stack.length] = x % y;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitAnd = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = a & b;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitLShift = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = b << a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitOr = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = b | a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitRShift = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = b >> a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitURShift = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = b >> a;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionBitXor = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = a ^ b;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionDecrement = function(stack)
+    {
+        var value = _parseFloat(stack.pop());
+        value--;
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionIncrement = function(stack)
+    {
+        var value = _parseFloat(stack.pop());
+        value++;
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionPushDuplicate = function(stack)
+    {
+        var value = stack[0];
+        stack[stack.length] = value;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStackSwap = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = a;
+        stack[stack.length] = b;
+    };
+
+    /**
+     * @param stack
+     * @param number
+     */
+    ActionScript.prototype.ActionStoreRegister = function(stack, number)
+    {
+        var value = stack[stack.length-1];
+        this.params[number] = value;
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionInstanceOf = function(stack)
+    {
+        var constr = stack.pop();
+        var object = stack.pop();
+        stack[stack.length] = (object instanceof constr);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionEnumerate2 = function(stack)
+    {
+        var object = stack.pop();
+        stack[stack.length] = null;
+        if (object instanceof Object) {
+            if (object instanceof MovieClip) {
+                object = object.variables;
+            }
+            for (var name in object) {
+                if (!object.hasOwnProperty(name)) {
+                    continue;
+                }
+                stack[stack.length] = name;
+            }
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionStrictEquals = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = (b === a);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionGreater = function(stack)
+    {
+        var a = stack.pop();
+        var b = stack.pop();
+        stack[stack.length] = (b > a);
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionExtends = function(stack)
+    {
+        console.log('ActionExtends');
+        var superClass = stack.pop();
+        var subClass = stack.pop();
+        if (superClass && subClass) {
+            subClass.prototype = {};
+            subClass.prototype = superClass.prototype;
+            subClass.constructor = superClass;
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionCastOp = function(stack)
+    {
+        console.log('ActionCastOp');
+        var object = stack.pop();
+        var func = stack.pop();
+        if (object === "") {
+            stack[stack.length] = null;
+        } else {
+            stack[stack.length] = null;
+        }
+    };
+
+    /**
+     * @param stack
+     */
+    ActionScript.prototype.ActionImplementsOp = function(stack)
+    {
+        console.log('ActionImplementsOp');
+        var func = stack.pop();
+        var count = stack.pop();
+        var params = [];
+        for (; count--;) {
+            params[params.length] = stack.pop();
+        }
+        stack[stack.length] = null;
+    };
+
+    /**
+     * ActionTry
+     */
+    ActionScript.prototype.ActionTry = function()
+    {
+        console.log("ActionTry");
+    };
+
+    /**
+     * ActionThrow
+     */
+    ActionScript.prototype.ActionThrow = function()
+    {
+        console.log("ActionThrow");
+        var value = stack.pop();
+        throw new Error(value);
     };
 
     /**
@@ -7131,26 +7918,26 @@ if (!('swf2js' in window)){(function(window)
         caller._depth = 0;
         caller._name = null;
         caller._framesloaded = 0;
-        caller._target = '';
+        caller._target = "";
     };
 
     /**
      * @param name
-     * @returns {*}
+     * @returns {undefined}
      */
     Property.prototype.getProperty = function(name)
     {
-        var value = undefined;
+        var value;
         var _this = this;
-        if (typeof name == 'string') {
-            if (name.indexOf(':') != -1) {
+        if (typeof name === "string") {
+            if (name.indexOf(":") !== -1) {
                 var split = name.split(':');
                 var mc = _this.getMovieClip(split[0]);
                 if (mc)
                     _this = mc;
                 name = split[1];
-            } else if (name.indexOf('.') != -1) {
-                var split = name.split('.');
+            } else if (name.indexOf(".") !== -1) {
+                var split = name.split(".");
                 name = split.pop();
                 var path = "";
                 var length = split.length;
@@ -7165,110 +7952,112 @@ if (!('swf2js' in window)){(function(window)
 
         switch (name) {
             case 0:
-            case '_x':
+            case "_x":
                 value = _this.getX();
                 break;
             case 1:
-            case '_y':
+            case "_y":
                 value = _this.getY();
                 break;
             case 2:
-            case '_xscale':
+            case "_xscale":
                 value = _this.getXScale();
                 break;
             case 3:
-            case '_yscale':
+            case "_yscale":
                 value = _this.getYScale();
                 break;
             case 4:
-            case '_currentframe':
-                if (_this instanceof MovieClip)
+            case "_currentframe":
+                if (_this instanceof MovieClip) {
                     value = _this.getFrame();
+                }
                 break;
             case 5:
-            case '_totalframes':
-                if (_this instanceof MovieClip)
+            case "_totalframes":
+                if (_this instanceof MovieClip) {
                     value = _this.getTotalFrames();
+                }
                 break;
             case 6:
-            case '_alpha':
+            case "_alpha":
                 value = _this.getAlpha();
                 break;
             case 7:
-            case '_visible':
+            case "_visible":
                 value = _this.getVisible();
                 break;
             case 8:
-            case '_width':
+            case "_width":
                 value = _this.getWidth();
                 break;
             case 9:
-            case '_height':
+            case "_height":
                 value = _this.getHeight();
                 break;
             case 10:
-            case '_rotation':
+            case "_rotation":
                 value = _this.getRotation();
                 break;
             case 11:
-            case '_target':
+            case "_target":
                 value = _this.getTarget();
                 break;
             case 12:
-            case '_framesloaded':
+            case "_framesloaded":
                 value = _this._framesloaded;
                 break;
             case 13:
-            case '_name':
+            case "_name":
                 value = _this.getName();
                 break;
             case 14:
-            case '_droptarget':
-                if (_this instanceof MovieClip)
+            case "_droptarget":
+                if (_this instanceof MovieClip) {
                     value = _this.getDropTarget();
+                }
                 break;
             case 15:
-            case '_url':
+            case "_url":
                 value = _this._url;
                 break;
             case 16:
-            case '_highquality':
+            case "_highquality":
                 value = _this._highquality;
                 break;
             case 17:
-            case '_focusrect':
+            case "_focusrect":
                 value = _this._focusrect;
                 break;
             case 18:
-            case '_soundbuftime':
+            case "_soundbuftime":
                 value = _this._soundbuftime;
                 break;
             case 19:
-            case '_quality':
+            case "_quality":
                 value = _this._quality;
                 break;
             case 20:
-            case '_xmouse':
+            case "_xmouse":
                 value = _this.getXMouse();
                 break;
             case 21:
-            case '_ymouse':
+            case "_ymouse":
                 value = _this.getYMouse();
                 break;
-            case 'text':
-                var variable = _this.getVariable('variable');
+            case "text":
+                var variable = _this.getVariable("variable");
                 if (variable) {
                     value = _this.getVariable(variable);
                 } else {
-                    value = _this.getVariable('text');
+                    value = _this.getVariable("text");
                 }
-
                 break;
-            case 'Key':
+            case "Key":
                 value = keyClass;
                 break;
-            case '$version':
-                value = 'swf2js 8,0,0';
+            case "$version":
+                value = "swf2js 8,0,0";
                 break;
             default:
                 value = _this.getVariable(name);
@@ -7285,144 +8074,159 @@ if (!('swf2js' in window)){(function(window)
     Property.prototype.setProperty = function(name, value)
     {
         var _this = this;
-        if (typeof name == 'string') {
-            if (name.indexOf(':') != -1) {
-                var split = name.split(':');
-                var mc = _this.getMovieClip(split[0]);
-                if (mc)
+        var target = name;
+        var split;
+        var mc;
+        if (typeof target === "string") {
+            if (target.indexOf(":") !== -1) {
+                split = target.split(":");
+                mc = _this.getMovieClip(split[0]);
+                if (mc) {
                     _this = mc;
-                name = split[1];
-            } else if (name.indexOf('.') != -1) {
-                var split = name.split('.');
-                name = split.pop();
+                }
+                target = split[1];
+            } else if (target.indexOf(".") !== -1) {
+                split = target.split(".");
+                target = split.pop();
                 var path = "";
                 var length = split.length;
                 for (var i = 0; i < length; i++) {
                     path += split[i];
                 }
-                var mc = _this.getMovieClip(path);
-                if (mc)
+                mc = _this.getMovieClip(path);
+                if (mc) {
                     _this = mc;
+                }
             }
         }
 
-        switch (name) {
+        switch (target) {
             case 0:
-            case '_x':
+            case "_x":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setX(value);
+                }
                 break;
             case 1:
-            case '_y':
+            case "_y":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setY(value);
+                }
                 break;
             case 2:
-            case '_xscale':
+            case "_xscale":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setXScale(value);
+                }
                 break;
             case 3:
-            case '_yscale':
+            case "_yscale":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setYScale(value);
+                }
                 break;
             case 4:
-            case '_currentframe':
+            case "_currentframe":
                 if (_this instanceof MovieClip) {
                     value = _parseFloat(value);
-                    if (!_isNaN(value))
+                    if (!_isNaN(value)) {
                         _this.setNextFrame(value);
-                    break;
+                    }
                 }
+                break;
             case 5:
-            case '_totalframes':
+            case "_totalframes":
                 if (_this instanceof MovieClip) {
                     value = _parseFloat(value);
-                    if (!_isNaN(value))
+                    if (!_isNaN(value)) {
                         _this.setTotalFrames(value);
-                    break;
+                    }
                 }
+                break;
             case 6:
-            case '_alpha':
+            case "_alpha":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setAlpha(value);
+                }
                 break;
             case 7:
-            case '_visible':
+            case "_visible":
                 _this.setVisible(value);
                 break;
             case 8:
-            case '_width':
+            case "_width":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setWidth(value);
+                }
                 break;
             case 9:
-            case '_height':
+            case "_height":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setHeight(value);
+                }
                 break;
             case 10:
-            case '_rotation':
+            case "_rotation":
                 value = _parseFloat(value);
-                if (!_isNaN(value))
+                if (!_isNaN(value)) {
                     _this.setRotation(value);
+                }
                 break;
             case 11:
-            case '_target':
+            case "_target":
                 break;
             case 12:
-            case '_framesloaded':
+            case "_framesloaded":
                 break;
             case 13:
-            case '_name':
+            case "_name":
                 _this.setName(value);
                 break;
             case 14:
-            case '_droptarget':
+            case "_droptarget":
                 break;
             case 15:
-            case '_url':
+            case "_url":
                 break;
             case 16:
-            case '_highquality':
+            case "_highquality":
                 _this._highquality = value;
                 break;
             case 17:
-            case '_focusrect':
+            case "_focusrect":
                 _this._focusrect = value;
                 break;
             case 18:
-            case '_soundbuftime':
+            case "_soundbuftime":
                 _this._soundbuftime = value;
                 break;
             case 19:
-            case '_quality':
+            case "_quality":
                 _this._quality = value;
                 break;
             case 20:
-            case '_xmouse':
+            case "_xmouse":
                 break;
             case 21:
-            case '_ymouse':
+            case "_ymouse":
                 break;
-            case 'text':
-                var variable = _this.getVariable('variable');
+            case "text":
+                var variable = _this.getVariable("variable");
                 if (variable) {
                     _this.setVariable(variable, value);
                 } else {
-                    _this.setVariable('text', value);
+                    _this.setVariable("text", value);
                 }
                 break;
             default:
-                _this.setVariable(name, value);
+                _this.setVariable(target, value);
                 break;
         }
     };
@@ -7543,7 +8347,7 @@ if (!('swf2js' in window)){(function(window)
     Property.prototype.setVisible = function(visible)
     {
         var _this = this;
-        if (typeof visible == "boolean") {
+        if (typeof visible === "boolean") {
             _this._visible = visible;
         } else {
             visible = _parseFloat(visible);
@@ -7678,7 +8482,7 @@ if (!('swf2js' in window)){(function(window)
             return null;
 
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         var div = _document.getElementById(stage.getName());
         var bounds = div.getBoundingClientRect();
@@ -7699,7 +8503,7 @@ if (!('swf2js' in window)){(function(window)
         var _multiplicationMatrix = multiplicationMatrix;
         for (;;) {
             var parent = mc.getParent();
-            if (!parent || parent.characterId == 0)
+            if (!parent || parent.characterId === 0)
                 break;
             matrix = _multiplicationMatrix(parent.getMatrix(), matrix);
             mc = parent;
@@ -7718,11 +8522,11 @@ if (!('swf2js' in window)){(function(window)
      */
     Property.prototype.getYMouse = function()
     {
-        if (!_event)
+        if (!_event) {
             return null;
-
+        }
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         var div = _document.getElementById(stage.getName());
         var bounds = div.getBoundingClientRect();
@@ -7742,8 +8546,9 @@ if (!('swf2js' in window)){(function(window)
         var _multiplicationMatrix = multiplicationMatrix;
         for (;;) {
             var parent = mc.getParent();
-            if (!parent || parent.characterId == 0)
+            if (!parent || parent.characterId === 0) {
                 break;
+            }
             matrix = _multiplicationMatrix(parent.getMatrix(), matrix);
             mc = parent;
         }
@@ -7771,21 +8576,23 @@ if (!('swf2js' in window)){(function(window)
         var version = stage.getVersion();
         if (version < 7) {
             for (var key in variables) {
-                if (typeof key != 'string')
+                if (typeof key !== "string") {
                     continue;
-
-                if (key.toLowerCase() == name.toLowerCase())
+                }
+                if (key.toLowerCase() === name.toLowerCase()) {
                     return variables[key];
+                }
             }
         }
         if (version > 4) {
-            var stage = _this.getStage();
             var _global = stage.getGlobal();
             var value = _global.getVariable(name);
-            if (value)
+            if (value) {
                 return value;
-            if (name in window)
+            }
+            if (name in window) {
                 return window[name];
+            }
             return  _this.getMovieClip(name);
         }
         return undefined;
@@ -7800,16 +8607,19 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var variables = _this.variables;
         var stage = _this.getStage();
-
-        if (stage.getVersion() < 7 && typeof name == 'string') {
+        if (typeof name !== "string") {
+            name += "";
+        }
+        if (stage.getVersion() < 7) {
             for (var key in variables) {
-                if (key.toLowerCase() != name.toLowerCase())
+                if (key.toLowerCase() !== name.toLowerCase()) {
                     continue;
+                }
                 _this.variables[key] = value;
                 return 0;
             }
         }
-        _this.variables[String(name)] = value;
+        _this.variables[name] = value;
     };
 
     /**
@@ -7818,10 +8628,11 @@ if (!('swf2js' in window)){(function(window)
      */
     Property.prototype.getMovieClip = function(path)
     {
-
         var _this = this;
         var mc = _this;
         var _root = mc;
+        var tags;
+        var tag;
         for (;;) {
             var parent = _root.getParent();
             if (!parent)
@@ -7829,109 +8640,124 @@ if (!('swf2js' in window)){(function(window)
             _root = parent;
         }
 
-        var _path = path + '';
-        if (_path == '_root')
+        if (typeof path !== "string") {
+            path += "";
+        }
+        if (path === "_root") {
             return _root;
-
-        if (_path == 'this')
+        }
+        if (path === "this") {
             return this;
-
+        }
         var stage = _root.getStage();
-        if (_path == '_global')
+        if (path === "_global") {
             return stage.getGlobal();
+        }
 
         parent = mc.getParent();
-        if (_path == '_parent')
-            return (parent != null) ? parent : undefined;
+        if (path === "_parent") {
+            return (parent !== null) ? parent : undefined;
+        }
 
-        if (_path.substr(0, 6) == '_level') {
-            var level = _path.substr(6);
-            if (level == 0)
+        if (path.substr(0, 6) === "_level") {
+            var level = path.substr(6);
+            if (!_isNaN(level)) {
+                level = _parseFloat(level);
+            }
+            if (level === 0) {
                 return _root;
-            if (!parent)
+            }
+            if (!parent) {
                 parent = stage.getParent();
-            var tags = parent.getTags();
+            }
+            tags = parent.getTags();
             if (level in tags) {
-                var tag = tags[level];
-                if (tag instanceof MovieClip)
+                tag = tags[level];
+                if (tag instanceof MovieClip) {
                     return tag;
+                }
             }
             return undefined;
         }
 
         var len = 1;
-        var splitData = [_path];
-        if (_path.indexOf('/') != -1) {
-            splitData = _path.split('/');
+        var splitData = [path];
+        if (path.indexOf("/") !== -1) {
+            splitData = path.split("/");
             len = splitData.length;
-            if (splitData[0] == '')
+            if (splitData[0] === "") {
                 mc = _root;
-        } else if (_path.indexOf('.') != -1) {
-            splitData = _path.split('.');
+            }
+        } else if (path.indexOf(".") !== -1) {
+            splitData = path.split(".");
             len = splitData.length;
-            if (splitData[0] == '_root')
+            if (splitData[0] === "_root") {
                 mc = _root;
+            }
         }
 
         for (var i = 0; i < len; i++) {
             var name = splitData[i];
-            if (name == '')
+            if (name === "") {
                 continue;
-
-            if (name == '_root') {
+            }
+            if (name === "_root") {
                 mc = _root;
                 continue;
             }
-
-            if (name == 'this') {
+            if (name === "this") {
                 mc = _this;
                 continue;
             }
-
-            if (name == '_parent') {
+            if (name === "_parent") {
                 parent = mc.getParent();
-                if (!parent)
+                if (!parent) {
                     return undefined;
+                }
                 mc = parent;
                 continue;
             }
-
-            if (name == '..') {
+            if (name === "..") {
                 mc = mc.getParent();
-                if (!mc)
+                if (!mc) {
                     return undefined;
+                }
                 continue;
             }
 
-            var tags = mc.getTags();
-            if (tags == undefined)
+            tags = mc.getTags();
+            if (tags === undefined) {
                 return undefined;
+            }
 
             var tagLength = tags.length;
             var setTarget = false;
-            if (!tagLength)
+            if (!tagLength) {
                 return undefined;
+            }
 
             for (;tagLength--;) {
-                if (!(tagLength in tags))
+                if (!(tagLength in tags)) {
                     continue;
+                }
 
-                var tag = tags[tagLength];
+                tag = tags[tagLength];
                 var tagName = tag.getName();
-                if (!tagName)
+                if (!tagName) {
                     continue;
+                }
 
-                if (tagName == name) {
+                if (tagName === name) {
                     mc = tag;
                     setTarget = true;
                     break;
                 }
             }
 
-            if (!setTarget)
+            if (!setTarget) {
                 return undefined;
+            }
         }
-
         return mc;
     };
 
@@ -8130,7 +8956,7 @@ if (!('swf2js' in window)){(function(window)
     Shape.prototype.isMorphing = function()
     {
         var tagType = this.getTagType();
-        return (tagType == 46 || tagType == 84);
+        return (tagType === 46 || tagType === 84);
     };
 
     /**
@@ -8173,7 +8999,7 @@ if (!('swf2js' in window)){(function(window)
             if (_this.isMorphing)
                 cacheId += "_"+ _this.getRatio();
 
-            var cacheKey = cacheStore.generateKey('Shape', cacheId, [xScale, yScale], colorTransform);
+            var cacheKey = cacheStore.generateKey("Shape", cacheId, [xScale, yScale], colorTransform);
             cache = cacheStore.get(cacheKey);
             if (!cache) {
                 if (stage.width > W && stage.height > H && cacheStore.size > W*H) {
@@ -8188,15 +9014,18 @@ if (!('swf2js' in window)){(function(window)
             }
 
             if (cache) {
-                var m2 = _multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
-                ctx.setTransform(m2[0], m2[1], m2[2], m2[3], m2[4], m2[5]);
-                if (isAndroid4x && !isChrome) {
-                    ctx.fillStyle = stage.context.createPattern(cache.canvas, 'no-repeat');
-                    ctx.fillRect(0, 0, W, H);
-                } else {
-                    var canvas = cache.canvas;
-                    if (canvas.width > 0 && canvas.height)
+                var canvas = cache.canvas;
+                if (canvas.width > 0 && canvas.height > 0) {
+                    var m2 = _multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
+                    ctx.setTransform(m2[0], m2[1], m2[2], m2[3], m2[4], m2[5]);
+
+                    if (isAndroid4x && !isChrome) {
+
+                        ctx.fillStyle = stage.context.createPattern(cache.canvas, "no-repeat");
+                        ctx.fillRect(0, 0, W, H);
+                    } else {
                         ctx.drawImage(canvas, 0, 0);
+                    }
                 }
             } else {
                 ctx.setTransform(rMatrix[0], rMatrix[1], rMatrix[2], rMatrix[3], rMatrix[4], rMatrix[5]);
@@ -8227,7 +9056,7 @@ if (!('swf2js' in window)){(function(window)
             var obj = data.obj;
             var styleObj = (!obj.HasFillFlag) ? obj : obj.FillType;
             var cmd = data.cmd;
-            var isStroke = (obj.Width != undefined);
+            var isStroke = (obj.Width !== undefined);
 
             if (isClipDepth) {
                 if (isStroke)
@@ -8274,7 +9103,7 @@ if (!('swf2js' in window)){(function(window)
                     ctx.transform(gMatrix[0], gMatrix[1], gMatrix[2], gMatrix[3], gMatrix[4], gMatrix[5]);
 
                     var type = styleObj.fillStyleType;
-                    var css = (type == 18 || type == 19)
+                    var css = (type === 18 || type === 19)
                         ? ctx.createRadialGradient(0, 0, 0, 0, 0, 16384)
                         : ctx.createLinearGradient(-16384, 0, 16384, 0);
 
@@ -8284,7 +9113,7 @@ if (!('swf2js' in window)){(function(window)
                         var record = records[rIdx];
                         var color = record.Color;
                         color = _generateColorTransform(color, colorTransform);
-                        css.addColorStop(record.Ratio, 'rgba(' + color.R + ', ' + color.G + ', ' + color.B + ', ' + color.A + ')');
+                        css.addColorStop(record.Ratio, "rgba("+ color.R +", "+ color.G +", "+ color.B +", "+ color.A +")");
                     }
 
                     if (isStroke) {
@@ -8309,26 +9138,27 @@ if (!('swf2js' in window)){(function(window)
                 case 0x43:
                     var bitmapId = styleObj.bitmapId;
                     var bMatrix = styleObj.bitmapMatrix;
-                    var repeat = (styleType == 0x40 || styleType == 0x42) ? 'repeat' : 'no-repeat';
+                    var repeat = (styleType === 0x40 || styleType === 0x42) ? "repeat" : "no-repeat";
                     var bitmapCacheKey = cacheStore.generateKey(
-                        'Bitmap',
+                        "Bitmap",
                         bitmapId +"_"+ localStage.getId() +"_"+ repeat,
                         undefined,
                         colorTransform
                     );
 
                     var image = cacheStore.get(bitmapCacheKey);
-                    if (image == undefined) {
+                    if (image === undefined) {
                         image = localStage.getCharacter(bitmapId);
-                        if (!image)
+                        if (!image) {
                             break;
+                        }
 
-                        if (colorTransform[0] != 1
-                            || colorTransform[1] != 1
-                            || colorTransform[2] != 1
-                            || colorTransform[4] != 0
-                            || colorTransform[5] != 0
-                            || colorTransform[6] != 0
+                        if (colorTransform[0] !== 1
+                            || colorTransform[1] !== 1
+                            || colorTransform[2] !== 1
+                            || colorTransform[4] !== 0
+                            || colorTransform[5] !== 0
+                            || colorTransform[6] !== 0
                         ) {
                             var canvas = cacheStore.getCanvas();
                             canvas.width = image.canvas.width;
@@ -8346,7 +9176,7 @@ if (!('swf2js' in window)){(function(window)
                     }
 
                     ctx.save();
-                    if (styleType == 0x41 || styleType == 0x43) {
+                    if (styleType === 0x41 || styleType === 0x43) {
                         ctx.clip();
                         ctx.transform(bMatrix[0], bMatrix[1], bMatrix[2], bMatrix[3], bMatrix[4], bMatrix[5]);
                         var canvas = image.canvas;
@@ -8386,7 +9216,7 @@ if (!('swf2js' in window)){(function(window)
             }
         }
 
-        var resetCss = 'rgba(0,0,0,1)';
+        var resetCss = "rgba(0,0,0,1)";
         ctx.strokeStyle = resetCss;
         ctx.fillStyle = resetCss;
         ctx.globalAlpha = 1;
@@ -8550,7 +9380,7 @@ if (!('swf2js' in window)){(function(window)
         var H = _ceil((yMax - yMin) * yScale);
 
         var cacheId = _this.getCharacterId() +"_"+ localStage.getId();
-        var cacheKey = cacheStore.generateKey('Text', cacheId, [xScale, yScale], colorTransform);
+        var cacheKey = cacheStore.generateKey("Text", cacheId, [xScale, yScale], colorTransform);
         var cache = cacheStore.get(cacheKey);
         if (!cache) {
             if (stage.width > W && stage.height > H && cacheStore.size > W*H) {
@@ -8566,15 +9396,16 @@ if (!('swf2js' in window)){(function(window)
         }
 
         if (cache) {
-            var m2 = _multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
-            ctx.setTransform(m2[0], m2[1], m2[2], m2[3], m2[4], m2[5]);
-            if (isAndroid4x && !isChrome) {
-                ctx.fillStyle = stage.context.createPattern(cache.canvas, 'no-repeat');
-                ctx.fillRect(0, 0, W, H);
-            } else {
-                var canvas = cache.canvas;
-                if (canvas.width > 0 && canvas.height)
+            var canvas = cache.canvas;
+            if (canvas.width > 0 && canvas.height > 0) {
+                var m2 = _multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
+                ctx.setTransform(m2[0], m2[1], m2[2], m2[3], m2[4], m2[5]);
+                if (isAndroid4x && !isChrome) {
+                    ctx.fillStyle = stage.context.createPattern(cache.canvas, "no-repeat");
+                    ctx.fillRect(0, 0, W, H);
+                } else {
                     ctx.drawImage(canvas, 0, 0);
+                }
             }
         } else {
             ctx.setTransform(rMatrix[0], rMatrix[1], rMatrix[2], rMatrix[3], rMatrix[4], rMatrix[5]);
@@ -8635,8 +9466,8 @@ if (!('swf2js' in window)){(function(window)
     var TextFormat = function()
     {
         var _this = this;
-        _this.align = 'left';
-        _this.font = "'HiraKakuProN-W3', 'sans-serif'";;
+        _this.align = "left";
+        _this.font = "'HiraKakuProN-W3', 'sans-serif'";
         _this.size = 0;
         _this.color = {R:0, G:0, B:0, A:1};
         _this.bold = 0;
@@ -8699,7 +9530,7 @@ if (!('swf2js' in window)){(function(window)
         obj.sharpness = 0;
         obj.textColor = {R:255,G:255,B:255,A:1};
         obj.thickness = 0;
-        obj.type = 'dynamic';
+        obj.type = "dynamic";
         obj.wordWrap = 0;
         obj.text = null;
         for (var name in obj)
@@ -8831,17 +9662,18 @@ if (!('swf2js' in window)){(function(window)
         var _multiplicationMatrix = multiplicationMatrix;
         var _generateColorTransform = generateColorTransform;
         var variables = _this.variables;
-        var text = variables['text'];
-        var variable = variables['variable'];
+        var text = variables["text"];
+        var variable = variables["variable"];
         if (variable) {
             var parent = _this.getParent();
             text = parent.getProperty(variable);
-            if (text == undefined)
-                text = variables['text'];
+            if (text === undefined) {
+                text = variables["text"];
+            }
         }
 
-        if (typeof text == 'number')
-            text += '';
+        if (typeof text === "number")
+            text += "";
 
         if (!text)
             return 0;
@@ -8859,24 +9691,24 @@ if (!('swf2js' in window)){(function(window)
         var H = _ceil(yMax - yMin);
 
         // border
-        var border = variables['border'];
+        var border = variables["border"];
         if (border) {
             ctx.beginPath();
             ctx.rect(xMin, yMin, W, H);
-            var backgroundColor = _generateColorTransform(variables['backgroundColor'], colorTransform);
-            ctx.fillStyle = 'rgba('
-                + backgroundColor.R +','
-                + backgroundColor.G +','
-                + backgroundColor.B +','
+            var backgroundColor = _generateColorTransform(variables["backgroundColor"], colorTransform);
+            ctx.fillStyle = "rgba("
+                + backgroundColor.R +","
+                + backgroundColor.G +","
+                + backgroundColor.B +","
                 + backgroundColor.A +
-                ')';
-            var borderColor = _generateColorTransform(variables['borderColor'], colorTransform);
-            ctx.strokeStyle = 'rgba('
-                + borderColor.R +','
-                + borderColor.G +','
-                + borderColor.B +','
+                ")";
+            var borderColor = _generateColorTransform(variables["borderColor"], colorTransform);
+            ctx.strokeStyle = "rgba("
+                + borderColor.R +","
+                + borderColor.G +","
+                + borderColor.B +","
                 + borderColor.A +
-                ')';
+                ")";
             ctx.lineWidth = _min(20, 1 / _min(rMatrix[0], rMatrix[3]));
             ctx.globalAlpha = 1;
             ctx.fill();
@@ -8889,23 +9721,23 @@ if (!('swf2js' in window)){(function(window)
         ctx.clip();
 
         // 文字色
-        var color = _generateColorTransform(variables['color'], colorTransform);
-        ctx.fillStyle = 'rgb('
-            + color.R +','
-            + color.G +','
+        var color = _generateColorTransform(variables["color"], colorTransform);
+        ctx.fillStyle = "rgb("
+            + color.R +","
+            + color.G +","
             + color.B +
-        ')';
+        ")";
         ctx.globalAlpha = color.A;
 
         // font type
-        var fontType = '';
-        if (variables['italic'])
-            fontType += 'italic ';
+        var fontType = "";
+        if (variables["italic"])
+            fontType += "italic ";
 
-        if (variables['bold'])
-            fontType += 'bold ';
+        if (variables["bold"])
+            fontType += "bold ";
 
-        ctx.font = fontType + variables['size'] +'px '+ variables['font'];
+        ctx.font = fontType + variables["size"] +"px "+ variables["font"];
 
         // 座標
         var leading = 0;
@@ -8916,14 +9748,14 @@ if (!('swf2js' in window)){(function(window)
         var dy = 0;
 
         var txt = '';
-        var wordWrap = variables['wordWrap'];
-        var multiline = variables['multiline'];
-        var splitData = text.split('@LFCR');
+        var wordWrap = variables["wordWrap"];
+        var multiline = variables["multiline"];
+        var splitData = text.split("@LFCR");
         var textLength = splitData.length;
-        var align = variables['align'];
+        var align = variables["align"];
 
         // アウトラインフォント
-        if (variables['embedFonts']) {
+        if (variables["embedFonts"]) {
             var fontData = localStage.getCharacter(_this.fontId);
             var CodeTable = fontData.CodeTable;
             var GlyphShapeTable = fontData.GlyphShapeTable;
@@ -8949,10 +9781,9 @@ if (!('swf2js' in window)){(function(window)
                     textWidth += (FontAdvanceTable[key] * fontScale);
                 }
 
-                // レイアウトに合わせてレンダリング
-                if (align == 'right') {
+                if (align === "right") {
                     XOffset += W - rightMargin - textWidth - 2;
-                } else if (align == 'center') {
+                } else if (align === 'center') {
                     XOffset += (indent + leftMargin)
                         + ((W - indent - leftMargin - rightMargin - textWidth) / 2);
                 } else {
@@ -8983,15 +9814,15 @@ if (!('swf2js' in window)){(function(window)
             xMin = bounds.xMin / 20 + 2;
             W = _ceil(xMax - xMin);
 
-            leading = variables['leading'] / 20;
-            rightMargin = variables['rightMargin'] / 20;
-            leftMargin = variables['leftMargin'] / 20;
-            indent = variables['indent'] / 20;
+            leading = variables["leading"] / 20;
+            rightMargin = variables["rightMargin"] / 20;
+            leftMargin = variables["leftMargin"] / 20;
+            indent = variables["indent"] / 20;
 
-            if (align == 'right') {
+            if (align === "right") {
                 ctx.textAlign = "end";
                 dx += (xMax + xMin) - rightMargin;
-            } else if (align == 'center') {
+            } else if (align === "center") {
                 ctx.textAlign = "center";
                 dx += (indent + leftMargin)
                     + (((xMax + xMin) - indent - leftMargin - rightMargin) / 2);
@@ -9000,7 +9831,7 @@ if (!('swf2js' in window)){(function(window)
             }
 
             var areaWidth = W - indent - leftMargin - rightMargin;
-            var size = variables['size'];
+            var size = variables["size"];
             var context = stage.context;
             context.setTransform(1,0,0,1,0,0);
             for (var i = 0; i < textLength; i++) {
@@ -9016,7 +9847,7 @@ if (!('swf2js' in window)){(function(window)
                             var textOne = ctx.measureText(txt[t]);
                             joinWidth += textOne.width;
                             joinTxt += txt[t];
-                            if (joinWidth > areaWidth || (t + 1) == txtLength) {
+                            if (joinWidth > areaWidth || (t + 1) === txtLength) {
                                 ctx.fillText(joinTxt, dx, dy, W);
                                 joinWidth = size;
                                 joinTxt = '';
@@ -9042,8 +9873,9 @@ if (!('swf2js' in window)){(function(window)
      */
     TextField.prototype.renderGlyph = function (records, ctx)
     {
-        if (records.data == undefined)
+        if (records.data === undefined) {
             records.data = vtc.execute(records);
+        }
 
         var shapes = records.data;
         var shapeLength = shapes.length;
@@ -9059,7 +9891,7 @@ if (!('swf2js' in window)){(function(window)
     // dummy
     TextField.prototype.addActions = function(){};
     TextField.prototype.putFrame = function(){};
-    TextField.prototype.getTags = function(){return null;};
+    TextField.prototype.getTags = function(){return undefined;};
 
     /**
      * @param parent
@@ -9163,7 +9995,7 @@ if (!('swf2js' in window)){(function(window)
             var audio = _document.createElement('audio');
             audio.onload = function () {
                 this.load();
-                this.preload = 'auto';
+                this.preload = "auto";
                 this.autoplay = false;
                 this.loop = false;
             };
@@ -9187,7 +10019,7 @@ if (!('swf2js' in window)){(function(window)
         _this.over = new ButtonCharacter(_this);
         _this.up = new ButtonCharacter(_this);
         _this.actions = [];
-        _this.buttonStatus = 'up';
+        _this.buttonStatus = "up";
         _this.renderMatrix = null;
     };
 
@@ -9254,7 +10086,7 @@ if (!('swf2js' in window)){(function(window)
     Button.prototype.setButtonStatus = function(status)
     {
         var _this = this;
-        if (_this.getButtonStatus() != status)
+        if (_this.getButtonStatus() !== status)
             _this.reset();
         _this.buttonStatus = status;
     };
@@ -9401,7 +10233,7 @@ if (!('swf2js' in window)){(function(window)
         if (aLen) {
             for (var idx = 0; idx < aLen; idx++) {
                 var cond = actions[idx];
-                if (cond.CondKeyPress == 13) {
+                if (cond.CondKeyPress === 13) {
                     buttonHits[buttonHits.length] = {
                         button: _this,
                         xMin: 0,
@@ -9416,11 +10248,11 @@ if (!('swf2js' in window)){(function(window)
         }
 
         if (visible) {
-            var status = 'hit';
+            var status = "hit";
             var hitTest = _this.getButtonCharacter(status);
             var hitTags = hitTest.getTags();
             if (!hitTags.length) {
-                status = 'up';
+                status = "up";
                 hitTest = _this.getButtonCharacter(status);
                 hitTags = hitTest.getTags();
             }
@@ -9520,31 +10352,31 @@ if (!('swf2js' in window)){(function(window)
             audio.load();
 
             if (currentTime) {
-                audio.addEventListener('canplay', function() {
+                audio.addEventListener("canplay", function() {
                     this.currentTime = currentTime;
                 });
             }
 
-            if (typeof loopCount == 'number' && loopCount > 0) {
+            if (typeof loopCount === "number" && loopCount > 0) {
                 audio.loopCount = loopCount;
                 var loopSound = function () {
                     audio.loopCount--;
                     if (!audio.loopCount) {
-                        audio.removeEventListener('ended', loopSound);
+                        audio.removeEventListener("ended", loopSound);
                     } else {
                         audio.volume = _this.volume / 100;
                         audio.currentTime = 0;
                         audio.play();
                     }
 
-                    if (!_this.isStreamin && 'onSoundComplete' in _this) {
-                        var as = _this['onSoundComplete'];
-                        if (as != undefined)
+                    if (!_this.isStreamin && "onSoundComplete" in _this) {
+                        var as = _this["onSoundComplete"];
+                        if (as !== undefined)
                             as(as.cache, _this.movieClip, [true]);
                     }
 
                 };
-                audio.addEventListener('ended', loopSound);
+                audio.addEventListener("ended", loopSound);
             }
 
             audio.play();
@@ -9577,30 +10409,30 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var sounds = _this.sounds;
-        var audio = _document.createElement('audio');
+        var audio = _document.createElement("audio");
         audio.onload = function () {
             this.load();
-            this.preload = 'auto';
+            this.preload = "auto";
             this.autoplay = false;
             this.loop = false;
         };
 
         var onLoad = function ()
         {
-            audio.removeEventListener('canplaythrough', onLoad);
-            if ('onLoad' in _this) {
-                var as = _this['onLoad'];
+            audio.removeEventListener("canplaythrough", onLoad);
+            if ("onLoad" in _this) {
+                var as = _this["onLoad"];
                 if (as)
                     as(as.cache, _this.movieClip, [true]);
             }
         };
-        audio.addEventListener('canplaythrough', onLoad);
+        audio.addEventListener("canplaythrough", onLoad);
 
         var onError = function()
         {
-            audio.removeEventListener('error', onLoad);
-            if ('onLoad' in _this) {
-                var as = _this['onLoad'];
+            audio.removeEventListener("error", onLoad);
+            if ("onLoad" in _this) {
+                var as = _this["onLoad"];
                 if (as)
                     as(as.cache, _this.movieClip, [true]);
             }
@@ -9628,10 +10460,10 @@ if (!('swf2js' in window)){(function(window)
                 var characterId = exportAssets[id];
                 var tag = stage.sounds[characterId];
                 if (tag) {
-                    var audio = _document.createElement('audio');
+                    var audio = _document.createElement("audio");
                     audio.onload = function () {
                         this.load();
-                        this.preload = 'auto';
+                        this.preload = "auto";
                         this.autoplay = false;
                         this.loop = false;
                     };
@@ -9690,10 +10522,10 @@ if (!('swf2js' in window)){(function(window)
         var transform = this.transform;
         for (var name in object) {
             switch (name) {
-                case 'll':
-                case 'lr':
-                case 'rl':
-                case 'rr':
+                case "ll":
+                case "lr":
+                case "rl":
+                case "rr":
                     transform[name] = object[name];
                     break;
             }
@@ -9749,7 +10581,7 @@ if (!('swf2js' in window)){(function(window)
         _this.labels = [];
         _this.sounds = [];
         _this.filters = [];
-        _this.buttonStatus = 'up';
+        _this.buttonStatus = "up";
 
         // 判定用
         _this.stopFlag = false;
@@ -9777,9 +10609,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.getStage = function()
     {
         var _this = this;
-        return (!_this.loadStage)
-            ? _this.stage
-            : _this.loadStage;
+        return (!_this.loadStage) ? _this.stage : _this.loadStage;
     };
 
     /**
@@ -9797,7 +10627,9 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.delEvent = function(name)
     {
         var variables = this.variables;
-        if (name in variables) delete variables[name];
+        if (name in variables) {
+            delete variables[name];
+        }
     };
 
     /**
@@ -9807,8 +10639,9 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var variables = _this.variables;
-        if (name in variables)
+        if (name in variables) {
             _this.setActionQueue([variables[name]]);
+        }
     };
 
     /**
@@ -9818,8 +10651,9 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var clipEvent = _this.clipEvent;
-        if (name in clipEvent)
+        if (name in clipEvent) {
             _this.setActionQueue(clipEvent[name]);
+        }
     };
 
     /**
@@ -9942,11 +10776,13 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.gotoAndPlay = function(frame)
     {
         var _this = this;
-        if (typeof frame != 'number') {
+        if (!_isNaN(frame)) {
+            frame = _parseFloat(frame);
+        }
+        if (typeof frame !== "number") {
             frame = _this.getLabel(frame);
         }
-
-        if (typeof frame == 'number' && frame) {
+        if (typeof frame === "number" && frame) {
             _this.setNextFrame(frame);
             _this.play();
         }
@@ -9958,10 +10794,13 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.gotoAndStop = function(frame)
     {
         var _this = this;
-        if (typeof frame != 'number') {
+        if (!_isNaN(frame)) {
+            frame = _parseFloat(frame);
+        }
+        if (typeof frame !== "number") {
             frame = _this.getLabel(frame);
         }
-        if (typeof frame != 'number' || !frame) {
+        if (typeof frame !== "number" || !frame) {
             frame = _this.getFrame();
             frame++;
             if (frame > _this.getTotalFrames())
@@ -9985,10 +10824,10 @@ if (!('swf2js' in window)){(function(window)
             var audio = loadSounds[sLen];
             var stopSound = function()
             {
-                audio.removeEventListener('pause', stopSound);
+                audio.removeEventListener("pause", stopSound);
                 audio.currentTime = 0;
             };
-            audio.addEventListener('pause', stopSound);
+            audio.addEventListener("pause", stopSound);
             audio.pause();
         }
     };
@@ -10026,13 +10865,13 @@ if (!('swf2js' in window)){(function(window)
         }
 
         if (!targetMc) {
-            if (typeof target == 'string') {
+            if (typeof target === "string") {
                 var _level = target.substr(0, 6);
-                if (_level == '_level')
+                if (_level === "_level")
                     target = _parseFloat(target.substr(6));
             }
 
-            if (typeof target == 'number') {
+            if (typeof target === "number") {
                 var parent = stage.getParent();
                 if (!parent)
                     parent = stage.getParent();
@@ -10044,27 +10883,27 @@ if (!('swf2js' in window)){(function(window)
             }
         }
 
-
-        if (targetMc == null)
+        if (!targetMc) {
             return 0;
+        }
 
         _this.unloadMovie(targetMc);
 
         var xmlHttpRequest = new XMLHttpRequest();
-        var method = 'GET';
+        var method = "GET";
         var targetUrl = url;
         var body = null;
-        if (SendVarsMethod == 2) {
-            method = 'POST';
-            var urls = url.split('?');
-            if (urls[1] != undefined) {
+        if (SendVarsMethod === 2) {
+            method = "POST";
+            var urls = url.split("?");
+            if (urls[1] !== undefined) {
                 body = urls[1];
             }
             targetUrl =  urls[0];
             xmlHttpRequest.open(method, targetUrl);
             xmlHttpRequest.setRequestHeader(
-                'Content-Type',
-                'application/x-www-form-urlencoded'
+                "Content-Type",
+                "application/x-www-form-urlencoded"
             );
         } else {
             xmlHttpRequest.open(method, targetUrl);
@@ -10081,7 +10920,7 @@ if (!('swf2js' in window)){(function(window)
         xmlHttpRequest.onreadystatechange = function()
         {
             var readyState = xmlHttpRequest.readyState;
-            if (readyState == 4) {
+            if (readyState === 4) {
                 var status = xmlHttpRequest.status;
                 switch (status) {
                     case 200:
@@ -10096,7 +10935,7 @@ if (!('swf2js' in window)){(function(window)
                         loadStage.parse(data);
 
                         // 入れ替え
-                        if (target == 0 || (typeof target != 'number' && targetMc.getParent() == null)) {
+                        if (target === 0 || (typeof target !== "number" && !targetMc.getParent())) {
                             loadStage.setId(stage.getId());
                             loadStage.setName(stage.getName());
                             loadStage.backgroundColor = stage.backgroundColor;
@@ -10159,29 +10998,33 @@ if (!('swf2js' in window)){(function(window)
      */
     MovieClip.prototype.getURL = function(url, target, method)
     {
-        if (url == 'FSCommand:fullscreen' || url == 'FSCommand:allowscale')
-            return true;
+        if (typeof url === "string") {
+            var cmd = url.substr(0, 9);
+            if (cmd === "FSCommand") {
+                return true;
+            }
+        }
 
         var _this = this;
-        if (target instanceof String) {
+        if (target && typeof target === "string") {
             switch (target.toLowerCase()) {
-                case '_self':
-                case '_blank':
-                case '_parent':
-                case '_top':
+                case "_self":
+                case "_blank":
+                case "_parent":
+                case "_top":
                     break;
-                case 'post':
-                    target = '_self';
-                    method = 'GET';
+                case "post":
+                    target = "_self";
+                    method = "GET";
                     break;
-                case 'get':
-                    target = '_self';
-                    method = 'GET';
+                case "get":
+                    target = "_self";
+                    method = "GET";
                     break;
                 default:
-                    if (!method)
-                        method = 'GET';
-
+                    if (!method) {
+                        method = "GET";
+                    }
                     _this.loadMovie(url, target, method);
                     return 0;
                     break;
@@ -10189,21 +11032,23 @@ if (!('swf2js' in window)){(function(window)
         }
 
         // form
-        if (method == 'POST') {
-            var form = _document.createElement('form');
+        if (method === "POST") {
+            var form = _document.createElement("form");
             form.action = url;
             form.method = method;
-            form.target = target;
+            if (target) {
+                form.target = target;
+            }
 
-            var urls = url.split('?');
+            var urls = url.split("?");
             if (urls.length > 1) {
-                var pears = urls[1].split('&');
+                var pears = urls[1].split("&");
                 var pLen = pears.length;
                 var _encodeURI = encodeURI;
                 for (var pIdx = 0; pIdx < pLen; pIdx++) {
-                    var pear = pears[pIdx].split('=');
-                    var input = _document.createElement('input');
-                    input.type = 'hidden';
+                    var pear = pears[pIdx].split("=");
+                    var input = _document.createElement("input");
+                    input.type = "hidden";
                     input.name = pear[0];
                     input.value = _encodeURI(pear[1]||'');
                     form.appendChild(input);
@@ -10212,7 +11057,7 @@ if (!('swf2js' in window)){(function(window)
             _document.body.appendChild(form);
             form.submit();
         } else {
-            var func = new Function("location.href = '"+ url +"';");
+            var func = new Func("location.href = '"+ url +"';");
             func();
         }
     };
@@ -10227,15 +11072,15 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         var xmlHttpRequest = new XMLHttpRequest();
         var body = null;
-        if (method == 'POST') {
-            var urls = url.split('?');
-            if (urls[1] != undefined)
+        if (method === "POST") {
+            var urls = url.split("?");
+            if (urls[1] !== undefined)
                 body = urls[1];
 
             xmlHttpRequest.open(method, urls[0]);
             xmlHttpRequest.setRequestHeader(
-                'Content-Type',
-                'application/x-www-form-urlencoded'
+                "Content-Type",
+                "application/x-www-form-urlencoded"
             );
         } else {
             xmlHttpRequest.open(method, url);
@@ -10244,19 +11089,19 @@ if (!('swf2js' in window)){(function(window)
         xmlHttpRequest.onreadystatechange = function()
         {
             var readyState = xmlHttpRequest.readyState;
-            if (readyState == 4) {
+            if (readyState === 4) {
                 var status = xmlHttpRequest.status;
                 switch (status) {
                     case 200:
                     case 304:
                         var responseText = _decodeURIComponent(xmlHttpRequest.responseText);
-                        var pairs = responseText.split('&');
+                        var pairs = responseText.split("&");
                         var length = pairs.length;
                         var targetMc = _this.getMovieClip(target);
-                        if (targetMc != null) {
+                        if (targetMc !== undefined) {
                             for (var idx = 0; idx < length; idx++) {
                                 var pair = pairs[idx];
-                                var values = pair.split('=');
+                                var values = pair.split("=");
                                 targetMc.setVariable(values[0], values[1]);
                             }
                         }
@@ -10265,50 +11110,6 @@ if (!('swf2js' in window)){(function(window)
             }
         };
         xmlHttpRequest.send(body);
-    };
-
-    /**
-     * @param method
-     * @returns {string}
-     */
-    MovieClip.prototype.checkMethod = function(method)
-    {
-        var methods = {
-            gotoandstop: 'gotoAndStop',
-            gotoandplay: 'gotoAndPlay',
-            play: 'play',
-            stop: 'stop',
-            duplicatemovieclip: 'duplicateMovieClip',
-            getproperty: 'getProperty',
-            onclipevent: 'onClipEvent',
-            removemovieclip: 'removeMovieClip',
-            setproperty: 'setProperty',
-            startdrag: 'startDrag',
-            stopdrag: 'stopDrag',
-            targetpath: 'targetPath',
-            updateafterevent: 'updateAfterEvent',
-            nextframe: 'nextFrame',
-            nextscene: 'nextScene',
-            prevframe: 'prevFrame',
-            prevscene: 'prevScene',
-            stopallsounds: 'stopAllSounds',
-            setmask: 'setMask',
-            geturl: 'getURL',
-            loadmovie: 'loadMovie',
-            loadmovienum: 'loadMovieNum',
-            loadvariables : 'loadVariables',
-            loadvariablesnum: 'loadVariablesNum',
-            unloadmovie: 'unloadMovie',
-            unloadmovienum: 'unloadMovieNum',
-            swapdepths: 'swapDepths',
-            attachmovie: 'attachMovie',
-            getnexthighestdepth: 'getNextHighestDepth',
-            getbytesloaded: 'getBytesLoaded',
-            getbytestotal: 'getBytesTotal'
-        };
-
-        var lowerMethod = method.toLowerCase();
-        return (lowerMethod in methods) ? methods[lowerMethod] : method;
     };
 
     /**
@@ -10403,7 +11204,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.stopDrag = function()
     {
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         stage.dragMc = null;
         stage.dragRules = null;
@@ -10416,7 +11217,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.executeDrag = function()
     {
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
 
         var dragRules = stage.dragRules;
@@ -10484,7 +11285,7 @@ if (!('swf2js' in window)){(function(window)
         var parent = _this.getParent();
         if (parent) {
             if (mc instanceof MovieClip) {
-                if (_this.getParent() == mc.getParent()) {
+                if (_this.getParent() === mc.getParent()) {
                     depth = mc.getLevel();
                     swapDepth = _this.getLevel();
                     swapMc = mc;
@@ -10503,14 +11304,14 @@ if (!('swf2js' in window)){(function(window)
                 var tags = parent.getTags();
                 if (depth in tags) {
                     var tag = tags[depth];
-                    if (tag.instanceId != _this.instanceId) {
+                    if (tag.instanceId !== _this.instanceId) {
                         swapMc = tag;
                         swapDepth = (_this._depth) ? _this._depth : _this.getLevel();
-                        if (swapDepth == depth) {
+                        if (swapDepth === depth) {
                             var length = tags.length;
                             if (length) {
                                 for (; length--;) {
-                                    if (!(length in tags) || _this != tags[length])
+                                    if (!(length in tags) || _this !== tags[length])
                                         continue;
                                     swapDepth = length;
                                     break;
@@ -10663,7 +11464,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.updateAfterEvent = function()
     {
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         stage.touchRender();
     };
@@ -10674,7 +11475,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.duplicateMovieClip = function()
     {
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
 
         var target = arguments[0];
@@ -10698,7 +11499,7 @@ if (!('swf2js' in window)){(function(window)
         }
 
         var cloneMc;
-        if (targetMc != null && targetMc.getCharacterId() != 0) {
+        if (targetMc !== undefined && targetMc.getCharacterId() !== 0) {
             var stage = targetMc.getStage();
             cloneMc = new MovieClip();
             cloneMc.stage = stage;
@@ -10772,8 +11573,9 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var targetMc = _this;
-        if (typeof name == 'string')
+        if (typeof name === 'string') {
             targetMc = _this.getMovieClip(name);
+        }
 
         if (targetMc instanceof MovieClip && targetMc.removable) {
             var depth = targetMc.getLevel();
@@ -10786,10 +11588,12 @@ if (!('swf2js' in window)){(function(window)
             var controller = parent.controller;
             var _controller = parent._controller;
             for (frame = parent.getTotalFrames(); --frame;) {
-                if (frame in _controller && depth in _controller[frame])
+                if (frame in _controller && depth in _controller[frame]) {
                     delete _controller[frame][depth];
-                if (frame in controller && depth in controller[frame])
+                }
+                if (frame in controller && depth in controller[frame]) {
                     delete controller[frame][depth];
+                }
             }
         }
     };
@@ -10833,8 +11637,8 @@ if (!('swf2js' in window)){(function(window)
         }
 
         if (_this.isLoad) {
-            _this.dispatchClipEvent('enterFrame');
-            _this.dispatchEvent('onEnterFrame');
+            _this.dispatchClipEvent("enterFrame");
+            _this.dispatchEvent("onEnterFrame");
             _this.addTouchEvent();
             if (_this.isAction) {
                 _this.isAction = false;
@@ -10891,7 +11695,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.setNextFrame = function(frame)
     {
         var _this = this;
-        if (_this.getFrame() != frame && frame > 0) {
+        if (_this.getFrame() !== frame && frame > 0) {
             _this.isAction = true;
 
             if (frame > _this.getTotalFrames()) {
@@ -10918,7 +11722,7 @@ if (!('swf2js' in window)){(function(window)
                         continue;
 
                     if (tag instanceof MovieClip && nextTag instanceof MovieClip) {
-                        if (tag.instanceId == nextTag.instanceId) {
+                        if (tag.instanceId === nextTag.instanceId) {
                             checked[tag.instanceId] = true;
                             continue;
                         }
@@ -11168,7 +11972,7 @@ if (!('swf2js' in window)){(function(window)
                 if (!(depth in tags))
                     continue;
                 var tag = tags[depth];
-                _this.dispatchClipEvent('unload');
+                _this.dispatchClipEvent("unload");
                 tag.reset();
             }
         }
@@ -11239,7 +12043,7 @@ if (!('swf2js' in window)){(function(window)
                     }
 
                     var level = tag.getLevel();
-                    if (level == depth) {
+                    if (level === depth) {
                         resetTags[depth] = tag;
                         continue;
                     }
@@ -11294,7 +12098,7 @@ if (!('swf2js' in window)){(function(window)
                 continue;
 
             var _cTag = _cTags[level];
-            if (_this.instanceId != _cTag.instanceId)
+            if (_this.instanceId !== _cTag.instanceId)
                 continue;
 
             var cTag = controller[frame][level];
@@ -11341,38 +12145,38 @@ if (!('swf2js' in window)){(function(window)
         for (var name in clipEvent) {
             var as = clipEvent[name];
             switch (name) {
-                case 'mouseDown':
+                case "mouseDown":
                     downEventHits[downEventHits.length] = {as: as, mc: _this};
                     break;
-                case 'mouseMove':
+                case "mouseMove":
                     moveEventHits[moveEventHits.length] = {as: as, mc: _this};
                     break;
-                case 'mouseUp':
+                case "mouseUp":
                     upEventHits[upEventHits.length] = {as: as, mc: _this};
                     break;
-                case 'keyDown':
+                case "keyDown":
                     if(isTouch) {
                         downEventHits[downEventHits.length] = {as: as, mc: _this};
                     } else {
                         keyDownEventHits[keyDownEventHits.length] = {as: as, mc: _this};
                     }
                     break;
-                case 'keyUp':
+                case "keyUp":
                     upEventHits[upEventHits.length] = {as: as, mc: _this};
                     break;
             }
         }
 
         var variables =_this.variables;
-        var as = variables['onMouseDown'];
+        var as = variables["onMouseDown"];
         if (as)
             downEventHits[downEventHits.length] = {as: [as], mc: _this};
 
-        var as = variables['onMouseMove'];
+        var as = variables["onMouseMove"];
         if (as)
             moveEventHits[moveEventHits.length] = {as: [as], mc: _this};
 
-        var as = variables['onMouseUp'];
+        var as = variables["onMouseUp"];
         if (as)
             upEventHits[upEventHits.length] = {as: [as], mc: _this};
     };
@@ -11388,10 +12192,10 @@ if (!('swf2js' in window)){(function(window)
         if (_this.isAction) {
             _this.isAction = false;
             if (!_this.isLoad) {
-                _this.dispatchClipEvent('load');
+                _this.dispatchClipEvent("load");
 
                 var variables = _this.variables;
-                var as = variables['onLoad'];
+                var as = variables["onLoad"];
                 if (as)
                     _this.setActionQueue([as]);
 
@@ -11421,7 +12225,7 @@ if (!('swf2js' in window)){(function(window)
     MovieClip.prototype.setActionQueue = function(as)
     {
         var _this = this;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         var actions = stage.actions;
         actions[actions.length] = {mc:_this, as: as};
@@ -11539,7 +12343,7 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         _this._droptarget = null;
-        var _root = _this.getMovieClip('_root');
+        var _root = _this.getMovieClip("_root");
         var stage = _root.getStage();
         var parent = _this.getParent();
         if (!parent)
@@ -11555,7 +12359,7 @@ if (!('swf2js' in window)){(function(window)
                 continue;
 
             var tag = tags[depth];
-            if (tag.instanceId == _this.instanceId)
+            if (tag.instanceId === _this.instanceId)
                 continue;
 
             if (!(tag instanceof MovieClip))
@@ -11603,13 +12407,13 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var actions = _this.getActions(frame);
-        if (actions != undefined) {
+        if (actions !== undefined) {
             var length = actions.length;
             for (var i = 0; i < length; i++) {
                 var as = actions[i];
                 if (as instanceof ActionScript) {
                     as.execute(_this);
-                } else if (typeof as == 'function') {
+                } else if (typeof as === 'function') {
                     if ('cache' in as) {
                         as(as.cache, _this, []);
                     } else {
@@ -11641,7 +12445,7 @@ if (!('swf2js' in window)){(function(window)
         // sound
         if (!_this.soundStopFlag) {
             var sounds = _this.getSounds();
-            if (sounds != undefined) {
+            if (sounds !== undefined) {
                 var sLen = sounds.length;
                 for (var idx = 0; idx < sLen; idx++) {
                     if (!(idx in sounds))
@@ -11687,13 +12491,13 @@ if (!('swf2js' in window)){(function(window)
                 var isFilter = false;
                 if (obj instanceof MovieClip) {
                     var buttonStatus = obj.getButtonStatus();
-                    if (isVisible && buttonStatus == 'up') {
+                    if (isVisible && buttonStatus === "up") {
                         var variables = obj.variables;
                         var clipEvent = obj.clipEvent;
-                        if ('press' in clipEvent
-                            || 'release' in clipEvent
-                            || 'onPress' in variables
-                            || 'onRelease' in variables
+                        if ("press" in clipEvent
+                            || "release" in clipEvent
+                            || "onPress" in variables
+                            || "onRelease" in variables
                         ) {
                             var buttonHits = stage.buttonHits;
                             var bounds = obj.getBounds(renderMatrix);
@@ -11728,7 +12532,7 @@ if (!('swf2js' in window)){(function(window)
         }
 
         lastDepth++;
-        if (length && length != lastDepth)
+        if (length && length !== lastDepth)
             tags.length = lastDepth;
 
         if (clips.length)
@@ -11818,7 +12622,7 @@ if (!('swf2js' in window)){(function(window)
                     case 0:
                         ctx.globalCompositeOperation = 'source-over';
                         ctx.shadowBlur = 0;
-                        ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                        ctx.shadowColor = "rgba(0,0,0,0)";
                         ctx.shadowOffsetX = 0;
                         ctx.shadowOffsetY = 0;
                         break;
@@ -11829,7 +12633,7 @@ if (!('swf2js' in window)){(function(window)
                         break;
                     case 2:
                         ctx.shadowBlur = 0;
-                        ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                        ctx.shadowColor = "rgba(0,0,0,0)";
                         ctx.shadowOffsetX = 0;
                         ctx.shadowOffsetY = 0;
                         break;
@@ -11870,7 +12674,7 @@ if (!('swf2js' in window)){(function(window)
      * @param mc
      * @private
      */
-    var _XML = function(mc)
+    var Xml = function(mc)
     {
         this.movieClip = mc;
         this.ignoreWhite = false;
@@ -11881,15 +12685,15 @@ if (!('swf2js' in window)){(function(window)
     /**
      * @param url
      */
-    _XML.prototype.load = function(url)
+    Xml.prototype.load = function(url)
     {
         var _this = this;
         var xmlHttpRequest = new XMLHttpRequest();
-        xmlHttpRequest.open('GET', url);
+        xmlHttpRequest.open("GET", url);
         xmlHttpRequest.onreadystatechange = function()
         {
             var readyState = xmlHttpRequest.readyState;
-            if (readyState == 4) {
+            if (readyState === 4) {
                 var status = xmlHttpRequest.status;
                 switch (status) {
                     case 200:
@@ -11897,8 +12701,8 @@ if (!('swf2js' in window)){(function(window)
                         var as = _this.onLoad;
                         if (as) {
                             var AS = as.cache;
-                            AS.setVariable('success', true);
-                            AS.setVariable('this', xmlHttpRequest.responseXML);
+                            AS.setVariable("success", true);
+                            AS.setVariable("this", xmlHttpRequest.responseXML);
                             AS.execute(_this.movieClip);
                         }
                         break;
@@ -11913,9 +12717,9 @@ if (!('swf2js' in window)){(function(window)
      * @param url
      * @param target
      */
-    _XML.prototype.send = function(url, target)
+    Xml.prototype.send = function(url, target)
     {
-        var sendTarget = target ? target : 'GET';
+        var sendTarget = target ? target : "GET";
         var xmlHttpRequest = new XMLHttpRequest();
         xmlHttpRequest.open(sendTarget, url);
         xmlHttpRequest.send(null);
@@ -11925,7 +12729,7 @@ if (!('swf2js' in window)){(function(window)
      * @param url
      * @param resultXML
      */
-    _XML.prototype.sendAndLoad = function(url, resultXML)
+    Xml.prototype.sendAndLoad = function(url, resultXML)
     {
         var _this = this;
         _this.send(url);
@@ -11943,7 +12747,7 @@ if (!('swf2js' in window)){(function(window)
      */
     Key.prototype.isDown = function(code)
     {
-        return (this.getCode() == code);
+        return (this.getCode() === code);
     };
 
     /**
@@ -12023,7 +12827,7 @@ if (!('swf2js' in window)){(function(window)
                     continue;
 
                 var hitObj = buttonHits[i];
-                if (!hitObj == null)
+                if (!hitObj === null)
                     continue;
 
                 var button = hitObj.button;
@@ -12080,7 +12884,7 @@ if (!('swf2js' in window)){(function(window)
                             break;
                     }
 
-                    if (CondKeyPress != keyCode)
+                    if (CondKeyPress !== keyCode)
                         continue;
 
                     stage.buttonAction(hitObj.parent, cond.ActionScript);
@@ -12152,7 +12956,7 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         _this.id = stageId++;
-        _this.name = 'swf2js_'+this.id;
+        _this.name = "swf2js_"+_this.id;
         _this.intervalId = 0;
 
         var mc = new MovieClip();
@@ -12207,7 +13011,7 @@ if (!('swf2js' in window)){(function(window)
         _this.isTouchEvent = false;
         _this.isLoad = false;
         _this.jpegTables = null;
-        _this.backgroundColor = 'rgb(255,255,255)';
+        _this.backgroundColor = "rgb(255,255,255)";
         _this.version = 8;
         _this.loadStatus = 0;
         _this.isClipDepth = false;
@@ -12215,8 +13019,8 @@ if (!('swf2js' in window)){(function(window)
         _this.clipMc = null;
         _this.dragMc = null;
         _this.dragRules = null;
-        _this.scaleMode = 'showAll';
-        _this.align = '';
+        _this.scaleMode = "showAll";
+        _this.align = "";
     };
 
     /**
@@ -12336,7 +13140,7 @@ if (!('swf2js' in window)){(function(window)
      */
     Stage.prototype.setOptions = function(options)
     {
-        if (options != undefined) {
+        if (options !== undefined) {
             var _this = this;
             _this.optionWidth = options.width || _this.optionWidth;
             _this.optionHeight = options.height || _this.optionHeight;
@@ -12502,7 +13306,7 @@ if (!('swf2js' in window)){(function(window)
                 _this.loaded();
                 break;
         }
-        if (_this.loadStatus != 4)
+        if (_this.loadStatus !== 4)
             _setTimeout(function (){ _this.loadEvent(); }, 0);
     };
 
@@ -12542,7 +13346,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
 
         var data = bitio.data;
-        if (data[0] == 0xff && data[1] == 0xd8) {
+        if (data[0] === 0xff && data[1] === 0xd8) {
             _this.parseJPEG(data, swftag);
             return false;
         }
@@ -12560,13 +13364,13 @@ if (!('swf2js' in window)){(function(window)
 
         // 圧縮データを解凍
         switch (signature) {
-            case 'FWS': // No ZIP
+            case "FWS": // No ZIP
                 break;
-            case 'CWS': // ZLIB
+            case "CWS": // ZLIB
                 bitio.deCompress(fileLength);
                 break;
-            case 'ZWS': // LZMA
-                alert('not supported by LZMA');
+            case "ZWS": // LZMA
+                alert("not supported by LZMA");
                 return false;
                 break;
         }
@@ -12594,7 +13398,7 @@ if (!('swf2js' in window)){(function(window)
     Stage.prototype.parseJPEG = function(data, swftag)
     {
         var _this = this;
-        var image = _document.createElement('img');
+        var image = _document.createElement("img");
         image.onload = function()
         {
             var width = this.width;
@@ -12721,7 +13525,7 @@ if (!('swf2js' in window)){(function(window)
         var height = 0;
 
         var parent = div.parentNode;
-        if (parent.tagName == 'BODY') {
+        if (parent.tagName === "BODY") {
             screenWidth  = (oWidth > 0) ? oWidth : window.innerWidth;
             screenHeight = (oHeight > 0) ? oHeight : window.innerHeight;
         } else {
@@ -12738,7 +13542,7 @@ if (!('swf2js' in window)){(function(window)
             scale = (screenWidth / baseWidth);
             width  = baseWidth * scale;
             height = baseHeight * scale;
-        } else if (baseWidth == baseHeight) {
+        } else if (baseWidth === baseHeight) {
             scale  = minSize / baseWidth;
             width  = baseWidth * scale;
             height = baseHeight * scale;
@@ -12754,10 +13558,10 @@ if (!('swf2js' in window)){(function(window)
 
         // divの設定
         var style = div.style;
-        style.width = width + 'px';
-        style.height = height + 'px';
+        style.width = width + "px";
+        style.height = height + "px";
         style.top = 0;
-        style.left =  ((screenWidth / 2) - (width / 2)) + 'px';
+        style.left =  ((screenWidth / 2) - (width / 2)) + "px";
 
         width *= devicePixelRatio;
         height *= devicePixelRatio;
@@ -12814,7 +13618,7 @@ if (!('swf2js' in window)){(function(window)
             _this.executeAction();
 
             // API
-            if (typeof _this.callback == 'function') {
+            if (typeof _this.callback === "function") {
                 _this.callback.call(window, mc);
             }
 
@@ -12949,8 +13753,8 @@ if (!('swf2js' in window)){(function(window)
                     var action = as[idx];
                     if (action instanceof ActionScript) {
                         action.execute(mc);
-                    } else if (typeof action == 'function') {
-                        if ('cache' in action) {
+                    } else if (typeof action === "function") {
+                        if ("cache" in action) {
                             action(action.cache, mc, []);
                         } else {
                             action.apply(mc);
@@ -13024,7 +13828,7 @@ if (!('swf2js' in window)){(function(window)
 
         if (_this.getId() in stages) {
             if (tagId) {
-                if (_document.readyState == 'loading') {
+                if (_document.readyState === "loading") {
                     var reStart = function () {
                         window.removeEventListener("DOMContentLoaded", reStart, false);
                         _this.init();
@@ -13037,7 +13841,7 @@ if (!('swf2js' in window)){(function(window)
 
                 var container = _document.getElementById(tagId);
                 if (!container) {
-                    alert('Not Found Tag ID:' + tagId);
+                    alert("Not Found Tag ID:" + tagId);
                     return 0;
                 }
 
@@ -13045,7 +13849,7 @@ if (!('swf2js' in window)){(function(window)
                 if (div) {
                     _this.deleteNode();
                 } else {
-                    div = _document.createElement('div');
+                    div = _document.createElement("div");
                     div.id = _this.getName();
                     container.appendChild(div);
                 }
@@ -13059,16 +13863,16 @@ if (!('swf2js' in window)){(function(window)
         var div = _document.getElementById(_this.getName());
         if (div) {
             var style = div.style;
-            style.position = 'relative';
-            style.top = '0';
-            style.backgroundColor = '#000000';
-            style.overflow = 'hidden';
+            style.position = "relative";
+            style.top = "0";
+            style.backgroundColor = "#000000";
+            style.overflow = "hidden";
             style["-webkit-backface-visibility"] = "hidden";
 
             var parent = div.parentNode;
             var oWidth = _this.optionWidth;
             var oHeight = _this.optionHeight;
-            if (parent.tagName == 'BODY') {
+            if (parent.tagName === "BODY") {
                 var width = (oWidth > 0) ? oWidth : window.innerWidth;
                 var height = (oHeight > 0) ? oHeight :window.innerHeight;
             } else {
@@ -13076,30 +13880,30 @@ if (!('swf2js' in window)){(function(window)
                 var height = (oHeight > 0) ? oHeight : parent.offsetHeight;
             }
 
-            style.width = width + 'px';
-            style.height = height + 'px';
-            style['-webkit-user-select'] = 'none';
+            style.width = width + "px";
+            style.height = height + "px";
+            style['-webkit-user-select'] = "none";
 
             // loading
             _this.loading();
         }
 
         if (!_this.canvas) {
-            var canvas = _document.createElement('canvas');
+            var canvas = _document.createElement("canvas");
             canvas.width = 1;
             canvas.height = 1;
 
             var style = canvas.style;
             style.zIndex = 0;
-            style.position = 'absolute';
-            style.zoom = 100 / _devicePixelRatio + '%';
-            style['-webkit-tap-highlight-color'] = 'rgba(0,0,0,0)';
+            style.position = "absolute";
+            style.zoom = 100 / _devicePixelRatio + "%";
+            style["-webkit-tap-highlight-color"] = "rgba(0,0,0,0)";
 
-            style.MozTransformOrigin = '0 0';
-            style.MozTransform = 'scale(' + 1 / _devicePixelRatio + ')';
+            style.MozTransformOrigin = "0 0";
+            style.MozTransform = "scale(" + 1 / _devicePixelRatio +")";
 
             if (isAndroid) {
-                canvas.addEventListener('touchcancel', function (event)
+                canvas.addEventListener("touchcancel", function (event)
                 {
                     _this.touchEnd(_event);
                 });
@@ -13114,13 +13918,13 @@ if (!('swf2js' in window)){(function(window)
                 });
             }
 
-            _this.context = canvas.getContext('2d');
+            _this.context = canvas.getContext("2d");
             _this.canvas = canvas;
 
-            var preCanvas = _document.createElement('canvas');
+            var preCanvas = _document.createElement("canvas");
             preCanvas.width = 1;
             preCanvas.height = 1;
-            _this.preContext = preCanvas.getContext('2d');
+            _this.preContext = preCanvas.getContext("2d");
         }
 
         _this.loadStatus++;
@@ -13134,30 +13938,30 @@ if (!('swf2js' in window)){(function(window)
     {
         var _this = this;
         var div = _document.getElementById(_this.getName());
-        var loadingId = _this.getName() + '_loading';
-        var css = '<style>';
-        css += '#'+ loadingId +' {\n';
-        css += 'z-index: 999;\n';
-        css += 'position: absolute;\n';
-        css += 'top: 50%;\n';
-        css += 'left: 50%;\n';
-        css += 'margin: -24px 0 0 -24px;\n';
-        css += 'width: 50px;\n';
-        css += 'height: 50px;\n';
-        css += 'border-radius: 50px;\n';
-        css += 'border: 8px solid #dcdcdc;\n';
-        css += 'border-right-color: transparent;\n';
-        css += 'box-sizing: border-box;\n';
-        css += '-webkit-animation: '+ loadingId +' 1s infinite linear;\n';
-        css += '} \n';
-        css += '@-webkit-keyframes '+ loadingId +' {\n';
-        css += '0% {-webkit-transform: rotate(0deg); opacity: 0.4;}\n';
-        css += '50% {-webkit-transform: rotate(180deg); opacity: 1;}\n';
-        css += '100% {-webkit-transform: rotate(360deg); opacity: 0.4;}\n';
-        css += '} \n';
-        css += '</style>';
+        var loadingId = _this.getName() + "_loading";
+        var css = "<style>";
+        css += "#"+ loadingId +" {\n";
+        css += "z-index: 999;\n";
+        css += "position: absolute;\n";
+        css += "top: 50%;\n";
+        css += "left: 50%;\n";
+        css += "margin: -24px 0 0 -24px;\n";
+        css += "width: 50px;\n";
+        css += "height: 50px;\n";
+        css += "border-radius: 50px;\n";
+        css += "border: 8px solid #dcdcdc;\n";
+        css += "border-right-color: transparent;\n";
+        css += "box-sizing: border-box;\n";
+        css += "-webkit-animation: "+ loadingId +" 1s infinite linear;\n";
+        css += "} \n";
+        css += "@-webkit-keyframes "+ loadingId +" {\n";
+        css += "0% {-webkit-transform: rotate(0deg); opacity: 0.4;}\n";
+        css += "50% {-webkit-transform: rotate(180deg); opacity: 1;}\n";
+        css += "100% {-webkit-transform: rotate(360deg); opacity: 0.4;}\n";
+        css += "} \n";
+        css += "</style>";
         div.innerHTML = css;
-        var loadingDiv = _document.createElement('div');
+        var loadingDiv = _document.createElement("div");
         loadingDiv.id = loadingId;
         div.appendChild(loadingDiv);
     };
@@ -13171,7 +13975,7 @@ if (!('swf2js' in window)){(function(window)
         var _this = this;
         _this.stop();
 
-        if (_this.loadStatus == 4)
+        if (_this.loadStatus === 4)
             _this.deleteNode();
 
         _this.loadStatus = 0;
@@ -13226,7 +14030,7 @@ if (!('swf2js' in window)){(function(window)
         var mc = _this.getParent();
         mc.reset();
         mc.gotoAndStop(frame);
-        if (width != _this.getWidth() || height != _this.getHeight()) {
+        if (width !== _this.getWidth() || height !== _this.getHeight()) {
             _this.optionWidth = width;
             _this.optionHeight = height;
             _this.resize();
@@ -13247,22 +14051,22 @@ if (!('swf2js' in window)){(function(window)
         var base64 = canvas.toDataURL();
 
         var xmlHttpRequest = new XMLHttpRequest();
-        xmlHttpRequest.open('POST', outputPath);
+        xmlHttpRequest.open("POST", outputPath);
         xmlHttpRequest.setRequestHeader(
-            'Content-Type',
-            'application/x-www-form-urlencoded'
+            "Content-Type",
+            "application/x-www-form-urlencoded"
         );
 
         // alert
         xmlHttpRequest.onreadystatechange = function()
         {
             var readyState = xmlHttpRequest.readyState;
-            if (readyState == 4) {
+            if (readyState === 4) {
                 var status = xmlHttpRequest.status;
                 switch (status) {
                     case 200:
                     case 304:
-                        console.log('OUTPUT SUCCESS');
+                        console.log("OUTPUT SUCCESS");
                         break;
                     default :
                         alert(xmlHttpRequest.statusText);
@@ -13271,7 +14075,7 @@ if (!('swf2js' in window)){(function(window)
             }
         };
 
-        xmlHttpRequest.send('data='+ encodeURIComponent(base64));
+        xmlHttpRequest.send("data="+ encodeURIComponent(base64));
     };
 
     /**
@@ -13315,7 +14119,7 @@ if (!('swf2js' in window)){(function(window)
                 continue;
 
             var hitObj = buttonHits[i];
-            if (hitObj == undefined)
+            if (hitObj === undefined)
                 continue;
 
             if (touchX >= hitObj.xMin && touchX <= hitObj.xMax
@@ -13325,19 +14129,19 @@ if (!('swf2js' in window)){(function(window)
                 _this.isHit = true;
 
                 var mc = hitObj.parent;
-                if (event.type == startEvent && mc.getButtonStatus() == 'up') {
-                    mc.setButtonStatus('down');
+                if (event.type === startEvent && mc.getButtonStatus() === "up") {
+                    mc.setButtonStatus("down");
                     var clipEvent = mc.clipEvent;
-                    if ('press' in clipEvent) {
-                        _this.executeEventAction({as:clipEvent['press'], mc: mc});
+                    if ("press" in clipEvent) {
+                        _this.executeEventAction({as:clipEvent["press"], mc: mc});
                     }
                     var variables = mc.variables;
-                    if ('onPress' in variables) {
-                        _this.executeEventAction({as:[variables['onPress']], mc: mc});
+                    if ("onPress" in variables) {
+                        _this.executeEventAction({as:[variables["onPress"]], mc: mc});
                     }
                 }
 
-                if (event.type == startEvent)
+                if (event.type === startEvent)
                     _this.touchObj = hitObj;
 
                 if (!_this.touchObj)
@@ -13348,11 +14152,11 @@ if (!('swf2js' in window)){(function(window)
                     break;
 
                 var parent = null;
-                if (_this.touchObj != null)
+                if (_this.touchObj !== null)
                     parent = _this.touchObj.parent;
                 var hitButton = _this.touchObj.button;
-                if (hitButton && button == hitButton)
-                    button.setButtonStatus('down');
+                if (hitButton && button === hitButton)
+                    button.setButtonStatus("down");
 
                 var actions = button.getActions();
                 var aLen = actions.length;
@@ -13363,23 +14167,23 @@ if (!('swf2js' in window)){(function(window)
 
                     var cond = actions[idx];
                     if (cond.CondOverDownToOverUp) {
-                        if (event.type == startEvent || parent == mc)
+                        if (event.type === startEvent || parent === mc)
                             _this.touchEndAction = cond.ActionScript;
                         continue;
                     }
 
-                    if (event.type != startEvent)
+                    if (event.type !== startEvent)
                         continue;
 
                     // enter
-                    if (hitObj.CondKeyPress == 13
-                        && hitObj.CondKeyPress != cond.CondKeyPress
+                    if (hitObj.CondKeyPress === 13
+                        && hitObj.CondKeyPress !== cond.CondKeyPress
                     ) {
                         continue;
                     }
 
                     var keyPress = cond.CondKeyPress;
-                    if (keyPress == 0 || keyPress == 13
+                    if (keyPress === 0 || keyPress === 13
                         || (keyPress >= 48 && keyPress <= 57)
                     ) {
                         _this.touchObj.ActionScript = cond.ActionScript;
@@ -13390,7 +14194,7 @@ if (!('swf2js' in window)){(function(window)
                     }
                 }
 
-                if (event.type == startEvent) {
+                if (event.type === startEvent) {
                     _this.touchRender();
                     var buttonCharacter = button.getButtonCharacter();
                     buttonCharacter.startSound();
@@ -13416,7 +14220,7 @@ if (!('swf2js' in window)){(function(window)
                 continue;
             if (as instanceof ActionScript) {
                 as.execute(mc);
-            } else if (typeof as == 'function') {
+            } else if (typeof as === "function") {
                 if ('cache' in as) {
                     as(as.cache, mc, []);
                 } else {
@@ -13478,20 +14282,20 @@ if (!('swf2js' in window)){(function(window)
                 var touchObj = _this.touchObj;
                 if (touchObj) {
                     var mc = touchObj.parent;
-                    if (mc.getButtonStatus() == 'down')
-                        mc.setButtonStatus('up');
+                    if (mc.getButtonStatus() === "down")
+                        mc.setButtonStatus("up");
 
                     var button = touchObj.button;
                     if (button) {
-                        if (button.getButtonStatus() == 'down') {
-                            button.setButtonStatus('up');
+                        if (button.getButtonStatus() === "down") {
+                            button.setButtonStatus("up");
                             var buttonCharacter = button.getButtonCharacter();
                             buttonCharacter.startSound();
                             _this.touchRender();
                         }
 
                         if (!isHit && _this.isHit) {
-                            var buttonCharacter = button.getButtonCharacter('over');
+                            var buttonCharacter = button.getButtonCharacter("over");
                             buttonCharacter.startSound();
                         }
                     }
@@ -13529,7 +14333,7 @@ if (!('swf2js' in window)){(function(window)
             var isRender = false;
             var touchEndAction = _this.touchEndAction;
             var mc = touchObj.parent;
-            if (touchEndAction != null) {
+            if (touchEndAction !== null) {
                 event.preventDefault();
                 _this.buttonAction(mc, touchEndAction);
                 isRender = true;
@@ -13537,20 +14341,20 @@ if (!('swf2js' in window)){(function(window)
 
             var clipEvent = mc.clipEvent;
             if ('release' in clipEvent) {
-                _this.executeEventAction({as:clipEvent['release'], mc:mc});
+                _this.executeEventAction({as:clipEvent["release"], mc:mc});
                 isRender = true;
             }
             var variables = mc.variables;
             if ('onRelease' in variables) {
-                _this.executeEventAction({as:[variables['onRelease']], mc:mc});
+                _this.executeEventAction({as:[variables["onRelease"]], mc:mc});
                 isRender = true;
             }
-            mc.setButtonStatus('up');
+            mc.setButtonStatus("up");
 
             var button = touchObj.button;
             if (button) {
-                button.setButtonStatus('up');
-                var buttonCharacter = button.getButtonCharacter('hit');
+                button.setButtonStatus("up");
+                var buttonCharacter = button.getButtonCharacter("hit");
                 buttonCharacter.startSound();
                 isRender = true;
             }
@@ -13576,52 +14380,44 @@ if (!('swf2js' in window)){(function(window)
     };
 
     /**
-     * @type {{}}
+     * @constructor
      */
-    var swf2js = {};
+    var Swf2js = function(){};
 
     /**
      * @param url
      * @param options
      */
-    swf2js.load = function(url, options)
+    Swf2js.prototype.load = function(url, options)
     {
         // TODO 開発用
-        if (url == 'develop') {
-            url = location.search.substr(1).split('&')[0];
+        if (url === "develop") {
+            url = location.search.substr(1).split("&")[0];
         }
 
         if (url) {
-            var stage = (options && options.stage instanceof Stage)
-                ? options.stage
-                : new Stage();
-
+            var stage = (options && options.stage instanceof Stage) ? options.stage : new Stage();
             stage.setOptions(options);
             stages[stage.getId()] = stage;
             stage.init();
 
             var xmlHttpRequest = new XMLHttpRequest();
             xmlHttpRequest.open('GET', url, true);
-
             if (isXHR2) {
-                xmlHttpRequest.responseType = 'arraybuffer';
+                xmlHttpRequest.responseType = "arraybuffer";
             } else {
-                xmlHttpRequest.overrideMimeType(
-                    'text/plain; charset=x-user-defined'
-                );
+                xmlHttpRequest.overrideMimeType("text/plain; charset=x-user-defined");
             }
 
             xmlHttpRequest.onreadystatechange = function()
             {
                 var readyState = xmlHttpRequest.readyState;
-                if (readyState == 4) {
+                if (readyState === 4) {
                     var status = xmlHttpRequest.status;
                     switch (status) {
                         case 200:
                         case 304:
-                            var data = isXHR2
-                                ? xmlHttpRequest.response
-                                : xmlHttpRequest.responseText;
+                            var data = (isXHR2) ? xmlHttpRequest.response : xmlHttpRequest.responseText;
                             stage.parse(data);
                             cacheStore.reset();
                             break;
@@ -13644,18 +14440,21 @@ if (!('swf2js' in window)){(function(window)
      * @param options
      * @returns {*}
      */
-    swf2js.reload = function(url, options)
+    Swf2js.prototype.reload = function(url, options)
     {
-        if (!stageId)
-            return swf2js.load(url, options);
+        if (!stageId) {
+            return this.load(url, options);
+        }
 
         var stage = stages[0];
         for (var i = 0; i < stageId; i++) {
-            if (!(i in stages))
+            if (!(i in stages)) {
                 continue;
+            }
             var p = stages[i];
-            if (i)
+            if (i) {
                 p.deleteNode(p.tagId);
+            }
             _clearInterval(p.intervalId);
         }
 
@@ -13673,7 +14472,7 @@ if (!('swf2js' in window)){(function(window)
      * @param options
      * @returns {MovieClip}
      */
-    swf2js.createRootMovieClip = function(width, height, fps, options)
+    Swf2js.prototype.createRootMovieClip = function(width, height, fps, options)
     {
         var stage = new Stage();
         stage.setBaseWidth(width);
@@ -13681,7 +14480,6 @@ if (!('swf2js' in window)){(function(window)
         stage.setFps(fps);
         stage.setOptions(options);
         stages[stage.getId()] = stage;
-
         stage.init();
         stage.isLoad = true;
 
@@ -13689,7 +14487,7 @@ if (!('swf2js' in window)){(function(window)
         mc.stage = stage;
         stage.parent = mc;
 
-        if (_document.readyState == 'loading') {
+        if (_document.readyState === "loading") {
             var reLoad = function()
             {
                 window.removeEventListener("DOMContentLoaded", reLoad, false);
@@ -13701,5 +14499,5 @@ if (!('swf2js' in window)){(function(window)
         return mc;
     };
 
-    window.swf2js = swf2js;
+    window.swf2js = new Swf2js();
 })(window);}
