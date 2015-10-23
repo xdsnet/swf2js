@@ -1,7 +1,7 @@
 /*jshint bitwise: false*/
 /*jshint sub:true*/
 /**
- * swf2js (version 0.5.14)
+ * swf2js (version 0.5.16)
  * Develop: https://github.com/ienaga/swf2js
  * ReadMe: https://github.com/ienaga/swf2js/blob/master/README.md
  * Web: https://swf2js.wordpress.com
@@ -27,6 +27,7 @@ if (!("swf2js" in window)){(function(window)
     var _cos = _Math.cos;
     var _sin = _Math.sin;
     var _log = _Math.log;
+    var _abs = _Math.abs;
     var _SQRT2 = _Math.SQRT2;
     var _LN2 = _Math.LN2;
     var _PI = _Math.PI;
@@ -227,6 +228,27 @@ if (!("swf2js" in window)){(function(window)
     }
 
     /**
+     * @param m
+     * @returns {*[]}
+     */
+    function linearGradientXY(m)
+    {
+        var x0 = -16384 * m[0] - 16384 * m[2] + m[4];
+        var x1 =  16384 * m[0] - 16384 * m[2] + m[4];
+        var x2 = -16384 * m[0] + 16384 * m[2] + m[4];
+        var y0 = -16384 * m[1] - 16384 * m[3] + m[5];
+        var y1 =  16384 * m[1] - 16384 * m[3] + m[5];
+        var y2 = -16384 * m[1] + 16384 * m[3] + m[5];
+        var vx2 = x2 - x0;
+        var vy2 = y2 - y0;
+        var sr1 = _sqrt(vx2 * vx2 + vy2 * vy2);
+        vx2 /= sr1;
+        vy2 /= sr1;
+        var sr2 = (x1 - x0) * vx2 + (y1 - y0) * vy2;
+        return [x0 + sr2 * vx2, y0 + sr2 * vy2, x1, y1];
+    }
+
+    /**
      * @param color
      * @returns {string}
      */
@@ -344,55 +366,6 @@ if (!("swf2js" in window)){(function(window)
 
             audio.play();
         }
-    }
-
-    /**
-     * @param method
-     * @returns {*}
-     */
-    function checkMethod(method)
-    {
-        if (!method) {
-            return method;
-        }
-
-        var methods = {
-            gotoandstop: "gotoAndStop",
-            gotoandplay: "gotoAndPlay",
-            play: "play",
-            stop: "stop",
-            duplicatemovieclip: "duplicateMovieClip",
-            getproperty: "getProperty",
-            onclipevent: "onClipEvent",
-            removemovieclip: "removeMovieClip",
-            setproperty: "setProperty",
-            startdrag: "startDrag",
-            stopdrag: "stopDrag",
-            targetpath: "targetPath",
-            updateafterevent: "updateAfterEvent",
-            nextframe: "nextFrame",
-            nextscene: "nextScene",
-            prevframe: "prevFrame",
-            prevscene: "prevScene",
-            stopallsounds: "stopAllSounds",
-            setmask: "setMask",
-            geturl: "getURL",
-            loadmovie: "loadMovie",
-            loadmovienum: "loadMovieNum",
-            loadvariables : "loadVariables",
-            loadvariablesnum: "loadVariablesNum",
-            unloadmovie: "unloadMovie",
-            unloadmovienum: "unloadMovieNum",
-            swapdepths: "swapDepths",
-            attachmovie: "attachMovie",
-            getnexthighestdepth: "getNextHighestDepth",
-            getbytesloaded: "getBytesLoaded",
-            getbytestotal: "getBytesTotal",
-            assetpropflags: "ASSetPropFlags"
-        };
-
-        var lowerMethod = method.toLowerCase();
-        return (lowerMethod in methods) ? methods[lowerMethod] : method;
     }
 
     /**
@@ -1820,6 +1793,10 @@ if (!("swf2js" in window)){(function(window)
                     tag.PlaceFlagHasFilterList = oTag.PlaceFlagHasFilterList;
                     tag.SurfaceFilterList = oTag.SurfaceFilterList;
                 }
+
+                if (!tag.PlaceFlagHasBlendMode && oTag.PlaceFlagHasBlendMode) {
+                    tag.BlendMode = oTag.BlendMode;
+                }
             }
         }
 
@@ -1873,8 +1850,9 @@ if (!("swf2js" in window)){(function(window)
                     obj = _this.buildShape(tag, char);
                     break;
                 case 46: // MorphShape
-                case 84: //
+                case 84: // MorphShape2
                     var MorphShape = _this.buildMorphShape(char, tag.Ratio);
+                    MorphShape.tagType = tagType;
                     obj = _this.buildShape(tag, MorphShape);
                     break;
                 case 7: // DefineButton
@@ -1997,6 +1975,10 @@ if (!("swf2js" in window)){(function(window)
             mc.setFilters(tag.SurfaceFilterList);
         }
 
+        // BlendMode
+        if (tag.BlendMode) {
+            mc.blendMode = tag.BlendMode;
+        }
         return mc;
     };
 
@@ -3286,7 +3268,6 @@ if (!("swf2js" in window)){(function(window)
         }
 
         imageContext.putImageData(imgData, 0, 0);
-
         stage.setCharacter(CharacterId, imageContext);
     };
 
@@ -4531,7 +4512,9 @@ if (!("swf2js" in window)){(function(window)
 
             // PlaceObject3
             if (tagType === 70) {
-                bitio.getUIBits(3); // Reserved
+                bitio.getUIBits(1); // Reserved
+                obj.PlaceFlagOpaqueBackground = bitio.getUIBits(1);
+                obj.PlaceFlagHasVisible = bitio.getUIBits(1);
                 obj.PlaceFlagHasImage = bitio.getUIBits(1);
                 obj.PlaceFlagHasClassName = bitio.getUIBits(1);
                 obj.PlaceFlagHasCacheAsBitmap = bitio.getUIBits(1);
@@ -4572,6 +4555,10 @@ if (!("swf2js" in window)){(function(window)
                 }
                 if (obj.PlaceFlagHasCacheAsBitmap) {
                     obj.BitmapCache = bitio.getUI8();
+                }
+                if (obj.PlaceFlagHasVisible) {
+                    obj.Visible = bitio.getUI8();
+                    obj.BackgroundColor = _this.rgba();
                 }
             }
 
@@ -6324,6 +6311,58 @@ if (!("swf2js" in window)){(function(window)
     };
 
     /**
+     * @type {{}}
+     */
+    ActionScript.prototype.methods = {
+        gotoandstop: "gotoAndStop",
+        gotoandplay: "gotoAndPlay",
+        play: "play",
+        stop: "stop",
+        duplicatemovieclip: "duplicateMovieClip",
+        getproperty: "getProperty",
+        onclipevent: "onClipEvent",
+        removemovieclip: "removeMovieClip",
+        setproperty: "setProperty",
+        startdrag: "startDrag",
+        stopdrag: "stopDrag",
+        targetpath: "targetPath",
+        updateafterevent: "updateAfterEvent",
+        nextframe: "nextFrame",
+        nextscene: "nextScene",
+        prevframe: "prevFrame",
+        prevscene: "prevScene",
+        stopallsounds: "stopAllSounds",
+        setmask: "setMask",
+        geturl: "getURL",
+        loadmovie: "loadMovie",
+        loadmovienum: "loadMovieNum",
+        loadvariables : "loadVariables",
+        loadvariablesnum: "loadVariablesNum",
+        unloadmovie: "unloadMovie",
+        unloadmovienum: "unloadMovieNum",
+        swapdepths: "swapDepths",
+        attachmovie: "attachMovie",
+        getnexthighestdepth: "getNextHighestDepth",
+        getbytesloaded: "getBytesLoaded",
+        getbytestotal: "getBytesTotal",
+        assetpropflags: "ASSetPropFlags"
+    };
+
+    /**
+     * @param method
+     * @returns {*}
+     */
+    ActionScript.prototype.checkMethod = function(method)
+    {
+        if (!method) {
+            return method;
+        }
+        var _methods = this.methods;
+        var lowerMethod = method.toLowerCase();
+        return (lowerMethod in _methods) ? _methods[lowerMethod] : method;
+    };
+
+    /**
      * @param mc
      * @param frame
      */
@@ -7168,7 +7207,7 @@ if (!("swf2js" in window)){(function(window)
 
         var value;
         if (object) {
-            method = checkMethod(method);
+            method = this.checkMethod(method);
 
             var func = object[method];
             var scope = this.scope;
@@ -7221,7 +7260,7 @@ if (!("swf2js" in window)){(function(window)
 
         var ret;
         if (mc) {
-            name = checkMethod(name);
+            name = _this.checkMethod(name);
             if (window[name]) {
                 var targetMc = mc;
                 if (params[0] instanceof MovieClip) {
@@ -7967,6 +8006,8 @@ if (!("swf2js" in window)){(function(window)
         proto.getYMouse = _this.getYMouse;
         proto.getVariable = _this.getVariable;
         proto.setVariable = _this.setVariable;
+        proto.getBlendMode = _this.getBlendMode;
+        proto.setBlendMode = _this.setBlendMode;
         proto.getMovieClip = _this.getMovieClip;
 
         caller.variables = [];
@@ -7983,6 +8024,7 @@ if (!("swf2js" in window)){(function(window)
         caller._name = null;
         caller._framesloaded = 0;
         caller._target = "";
+        caller.blendMode = 0;
     };
 
     /**
@@ -8125,6 +8167,9 @@ if (!("swf2js" in window)){(function(window)
                 break;
             case "MovieClip":
                 value = MovieClip;
+                break;
+            case "blendMode":
+                value = _this.getBlendMode();
                 break;
             default:
                 value = _this.getVariable(name);
@@ -8290,6 +8335,12 @@ if (!("swf2js" in window)){(function(window)
                     _this.setVariable(variable, value);
                 } else {
                     _this.setVariable("text", value);
+                }
+                break;
+            case "blendMode":
+                value = _parseFloat(value);
+                if (!_isNaN(value)) {
+                    _this.setBlendMode(value);
                 }
                 break;
             default:
@@ -8694,6 +8745,22 @@ if (!("swf2js" in window)){(function(window)
     };
 
     /**
+     * @returns {number}
+     */
+    Property.prototype.getBlendMode = function()
+    {
+        return this.blendMode;
+    };
+
+    /**
+     * @param value
+     */
+    Property.prototype.setBlendMode = function(value)
+    {
+        this.blendMode = value;
+    };
+
+    /**
      * @param path
      * @returns {*}
      */
@@ -8996,6 +9063,7 @@ if (!("swf2js" in window)){(function(window)
         proto.reset = _this.reset;
         proto.addActions = _this.addActions;
         proto.putFrame = _this.putFrame;
+        proto.getBlendMode = _this.getBlendMode;
     };
 
     Dummy.prototype.getName = function(){return null;};
@@ -9003,6 +9071,7 @@ if (!("swf2js" in window)){(function(window)
     Dummy.prototype.reset = function(){};
     Dummy.prototype.putFrame = function(){};
     Dummy.prototype.addActions = function(){};
+    Dummy.prototype.getBlendMode = function(){ return 0; };
 
     /**
      * @constructor
@@ -9061,8 +9130,7 @@ if (!("swf2js" in window)){(function(window)
             return 0;
         }
 
-        var _multiplicationMatrix = multiplicationMatrix;
-        var rMatrix = _multiplicationMatrix(stage.getMatrix(), matrix);
+        var rMatrix = multiplicationMatrix(stage.getMatrix(), matrix);
         var isClipDepth = _this.isClipDepth || stage.isClipDepth;
         if (isClipDepth) {
             setTransform(ctx, rMatrix);
@@ -9081,14 +9149,14 @@ if (!("swf2js" in window)){(function(window)
             var H = _ceil((yMax - yMin) * yScale);
 
             var cacheId = _this.getCharacterId() +"_"+ localStage.getId();
-            if (_this.isMorphing) {
+            if (_this.isMorphing()) {
                 cacheId += "_"+ _this.getRatio();
             }
             var cacheKey = cacheStore.generateKey("Shape", cacheId, [xScale, yScale], colorTransform);
             cache = cacheStore.get(cacheKey);
             var canvas;
             if (!cache) {
-                if (stage.width > W && stage.height > H && cacheStore.size > W*H) {
+                if (stage.getWidth() > W && stage.getHeight() > H && cacheStore.size > W*H) {
                     canvas = cacheStore.getCanvas();
                     canvas.width = W;
                     canvas.height = H;
@@ -9103,7 +9171,7 @@ if (!("swf2js" in window)){(function(window)
             if (cache) {
                 canvas = cache.canvas;
                 if (canvas.width > 0 && canvas.height > 0) {
-                    var m2 = _multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
+                    var m2 = multiplicationMatrix(rMatrix, [1 / xScale, 0, 0, 1 / yScale, xMin, yMin]);
                     setTransform(ctx, m2);
                     if (isAndroid4x && !isChrome) {
                         ctx.fillStyle = stage.context.createPattern(cache.canvas, "no-repeat");
@@ -9154,11 +9222,10 @@ if (!("swf2js" in window)){(function(window)
                 continue;
             }
 
-            var styleType = styleObj.fillStyleType;
-
             ctx.beginPath();
             cmd(ctx);
 
+            var styleType = styleObj.fillStyleType;
             switch (styleType) {
                 case 0x00:
                     color = styleObj.Color;
@@ -9181,9 +9248,17 @@ if (!("swf2js" in window)){(function(window)
                 case 0x10:
                 case 0x12:
                 case 0x13:
-                    var gMatrix = styleObj.gradientMatrix;
+                    var m = styleObj.gradientMatrix;
                     var type = styleObj.fillStyleType;
-                    css = (type === 18 || type === 19) ? ctx.createRadialGradient(0, 0, 0, 0, 0, 16384) : ctx.createLinearGradient(-16384, 0, 16384, 0);
+                    if (type !== 16) {
+                        ctx.save();
+                        ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+                        css =ctx.createRadialGradient(0, 0, 0, 0, 0, 16384);
+                    } else {
+                        var xy = linearGradientXY(m);
+                        css = ctx.createLinearGradient(xy[0], xy[1], xy[2], xy[3]);
+                    }
+
                     var records = styleObj.gradient.GradientRecords;
                     var rLength = records.length;
                     for (var rIdx = 0; rIdx < rLength; rIdx++) {
@@ -9193,8 +9268,6 @@ if (!("swf2js" in window)){(function(window)
                         css.addColorStop(record.Ratio, rgba(color));
                     }
 
-                    ctx.save();
-                    ctx.transform(gMatrix[0], gMatrix[1], gMatrix[2], gMatrix[3], gMatrix[4], gMatrix[5]);
                     if (isStroke) {
                         ctx.strokeStyle = css;
                         ctx.lineWidth = _max(obj.Width, 1 / minScale);
@@ -9206,7 +9279,10 @@ if (!("swf2js" in window)){(function(window)
                         ctx.fill();
                     }
 
-                    ctx.restore();
+                    if (type !== 16) {
+                        ctx.restore();
+                    }
+
                     break;
 
                 // bitmap
@@ -9248,8 +9324,7 @@ if (!("swf2js" in window)){(function(window)
                             image = _generateImageTransform.call(_this, imageContext, colorTransform);
                             cacheStore.set(bitmapCacheKey, image);
                         } else {
-                            var alpha = _max(0, _min((255 * colorTransform[3]) + colorTransform[7], 255)) / 255;
-                            ctx.globalAlpha = alpha;
+                            ctx.globalAlpha = _max(0, _min((255 * colorTransform[3]) + colorTransform[7], 255)) / 255;
                         }
                     }
 
@@ -9270,7 +9345,6 @@ if (!("swf2js" in window)){(function(window)
 
                     break;
             }
-
         }
 
         if (isClipDepth) {
@@ -9946,9 +10020,9 @@ if (!("swf2js" in window)){(function(window)
             dx += width - rightMargin;
         } else if (align === "center") {
             ctx.textAlign = "center";
-            dx += (indent + leftMargin) + ((xMax - indent - leftMargin - rightMargin) / 2);
+            dx += leftMargin + indent + ((width - leftMargin - indent - rightMargin) / 2);
         } else {
-            dx += indent + leftMargin;
+            dx += leftMargin + indent;
         }
 
         var size = variables["size"];
@@ -9957,23 +10031,22 @@ if (!("swf2js" in window)){(function(window)
 
         var ratio = 1 / _devicePixelRatio;
         var m3 = multiplicationMatrix(m2, [ratio, 0, 0, ratio, 0, 0]);
-        var scale = _sqrt(m3[0] * m3[0] + m3[1] * m3[1]);
+        var xScale = _sqrt(m3[0] * m3[0] + m3[1] * m3[1]);
         bounds = _this.getBounds(m3);
-        var areaWidth = (_ceil((bounds.xMax - 2) - (bounds.xMin + 2)) - leftMargin - rightMargin);
-
+        var areaWidth = (_ceil((bounds.xMax) - (bounds.xMin)) - leftMargin - rightMargin);
         var length = splitData.length;
         for (var i = 0; i < length; i++) {
             txt = splitData[i];
             if (wordWrap && multiline) {
                 var measureText = ctx.measureText(txt);
-                var txtTotalWidth = measureText.width * scale;
+                var txtTotalWidth = measureText.width * xScale;
                 if (txtTotalWidth > areaWidth) {
                     var txtLength = txt.length;
                     var joinTxt = "";
                     var joinWidth = size;
                     for (var t = 0; t < txtLength; t++) {
                         var textOne = ctx.measureText(txt[t]);
-                        joinWidth += textOne.width * scale;
+                        joinWidth += textOne.width * xScale;
                         joinTxt += txt[t];
                         if (joinWidth > areaWidth || (t + 1) === txtLength) {
                             ctx.fillText(joinTxt, dx, dy, width);
@@ -12696,7 +12769,22 @@ if (!("swf2js" in window)){(function(window)
                     }
                 }
 
-                obj.render(ctx, renderMatrix, renderColorTransform, stage, isVisible, _this.getStage());
+                if (obj.getBlendMode() < 3) {
+                    obj.render(ctx, renderMatrix, renderColorTransform, stage, isVisible, _this.getStage());
+                } else {
+                    var canvas = cacheStore.getCanvas();
+                    var width = stage.getWidth();
+                    var height = stage.getHeight();
+                    canvas.width = width;
+                    canvas.height = height;
+                    var blendCtx = canvas.getContext("2d");
+                    obj.render(blendCtx, renderMatrix, renderColorTransform, stage, isVisible, _this.getStage());
+                    var bCanvas = blendCtx.canvas;
+                    if (bCanvas.width > 0 && bCanvas.height > 0) {
+                        obj.blend(ctx, blendCtx, renderMatrix, renderColorTransform, stage);
+                    }
+                }
+
                 if (stage.isClipDepth) {
                     stage.isClipDepth = false;
                 }
@@ -12713,6 +12801,116 @@ if (!("swf2js" in window)){(function(window)
         }
         if (clips.length) {
             ctx.restore();
+        }
+    };
+
+    /**
+     * @param ctx
+     * @param blendCtx
+     * @param matrix
+     * @param colorTransform
+     * @param stage
+     */
+    MovieClip.prototype.blend = function(ctx, blendCtx, matrix, colorTransform, stage)
+    {
+        var _this = this;
+        var m2 = multiplicationMatrix(stage.getMatrix(), matrix);
+
+        var xScale = _sqrt(m2[0] * m2[0] + m2[1] * m2[1]);
+        var yScale = _sqrt(m2[2] * m2[2] + m2[3] * m2[3]);
+        xScale = _pow(_SQRT2, _ceil(_log(xScale) / (_LN2 / 2)));
+        yScale = _pow(_SQRT2, _ceil(_log(yScale) / (_LN2 / 2)));
+
+        var bounds = _this.getBounds();
+        var width = _ceil((bounds.xMax - bounds.xMin) * xScale * 20);
+        var height = _ceil((bounds.yMax - bounds.yMin) * yScale * 20);
+        if (width > 0 && height > 0) {
+            ctx.setTransform(1,0,0,1,0,0);
+            blendCtx.setTransform(1,0,0,1,0,0);
+
+            var mode = _this.blendMode;
+            var func;
+            switch (mode) {
+                case 3: // multiply
+                    func = function(a, b){ return a * b / 255; };
+                    break;
+                case 4: // screen
+                    func = function(a, b){ return a + b - a * b / 255; };
+                    break;
+                case 5: // lighten
+                    func = function(a, b){ return _max(a, b); };
+                    break;
+                case 6: // darken
+                    func = function(a, b){ return _min(a, b); };
+                    break;
+                case 7: // difference
+                    func = function(a, b){ return _abs(a - b); };
+                    break;
+                case 8: // add
+                    func = function(a, b){ return _min(a + b, 255); };
+                    break;
+                case 9: // subtract
+                    func = function(a, b){ return _max(a - b, 0); };
+                    break;
+                case 10: // invert
+                    func = function(a){ return 255 - a; };
+                    break;
+                default:
+                case 11: // alpha
+                case 12: // erase
+                    func = function(){ return arguments[1]; };
+                    break;
+                case 13: // overlay
+                    func = function(a, b){ return (a < 128) ? 2 * a * b / 255 : 255 - (a + b - 2 * a * b / 255); };
+                    break;
+                case 14: // hardlight
+                    func = function(a, b){ return (b < 128) ? 2 * a * b / 255 : 255 - (a + b - 2 * a * b / 255); };
+                    break;
+            }
+
+            var cacheId = _this.getCharacterId() +"_"+ _this.getStage().getId() +"_"+ mode;
+            var cacheKey = cacheStore.generateKey("MovieClip", cacheId, [xScale, yScale], colorTransform);
+            var cache = cacheStore.get(cacheKey);
+            if (!cache) {
+                var x = _ceil(m2[4]);
+                var y = _ceil(m2[5]);
+
+                var aData = ctx.getImageData(x, y, width, height);
+                var aPixel = aData.data;
+
+                var bData = blendCtx.getImageData(x, y, width, height);
+                var bPixel = bData.data;
+
+                var canvas = cacheStore.getCanvas();
+                canvas.width = width;
+                canvas.height = height;
+                cache = canvas.getContext("2d");
+                var pxData = cache.createImageData(width, height);
+                var pixelImage = pxData.data;
+                var size = pixelImage.length;
+                for (var px = 0; px < size; px += 4) {
+                    var aR = aPixel[px];
+                    var aG = aPixel[px + 1];
+                    var aB = aPixel[px + 2];
+
+                    var bR = bPixel[px];
+                    var bG = bPixel[px + 1];
+                    var bB = bPixel[px + 2];
+
+                    pixelImage[px] = func(aR, bR);
+                    pixelImage[px + 1] = func(aG, bG);
+                    pixelImage[px + 2] = func(aB, bB);
+                    pixelImage[px + 3] = aPixel[px + 3];
+                }
+
+                cache.putImageData(pxData, 0, 0);
+                //cacheStore.set(cacheKey, cache);
+                cacheStore.destroy(blendCtx);
+            }
+
+            if (cache) {
+                ctx.drawImage(cache.canvas, m2[4], m2[5]);
+            }
         }
     };
 
@@ -13721,10 +13919,6 @@ if (!("swf2js" in window)){(function(window)
             height = baseHeight * scale;
         }
 
-        _this.setScale(scale);
-        _this.setWidth(width * devicePixelRatio);
-        _this.setHeight(height * devicePixelRatio);
-
         // div
         var style = div.style;
         style.width = width + "px";
@@ -13734,6 +13928,10 @@ if (!("swf2js" in window)){(function(window)
 
         width *= devicePixelRatio;
         height *= devicePixelRatio;
+
+        _this.setScale(scale);
+        _this.setWidth(width);
+        _this.setHeight(height);
 
         // main
         var canvas = _this.context.canvas;
@@ -13776,8 +13974,8 @@ if (!("swf2js" in window)){(function(window)
         var div = _document.getElementById(_this.getName());
         if (div) {
             // backgroundColor
-            var style = div.style;
-            style.backgroundColor = _this.getBackgroundColor();
+            //var style = div.style;
+            //style.backgroundColor = _this.getBackgroundColor();
 
             // _root
             var mc = _this.getParent();
@@ -13901,7 +14099,8 @@ if (!("swf2js" in window)){(function(window)
         var mc = _this.getParent();
         var ctx = _this.preContext;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, _this.width + 1, _this.height + 1);
+        ctx.fillStyle = _this.getBackgroundColor();
+        ctx.fillRect(0, 0, _this.getWidth() + 1, _this.getHeight() + 1);
         mc.render(ctx, mc.getMatrix(), mc.getColorTransform(), _this, mc.getVisible());
     };
 
@@ -13955,7 +14154,7 @@ if (!("swf2js" in window)){(function(window)
         var preCanvas = preContext.canvas;
         var ctx = _this.context;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, _this.width + 1, _this.height + 1);
+        //ctx.clearRect(0, 0, _this.width + 1, _this.height + 1);
         ctx.drawImage(preCanvas, 0, 0);
     };
 
