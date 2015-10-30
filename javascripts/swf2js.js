@@ -1,7 +1,7 @@
 /*jshint bitwise: false*/
 /*jshint sub:true*/
 /**
- * swf2js (version 0.5.18)
+ * swf2js (version 0.5.19)
  * Develop: https://github.com/ienaga/swf2js
  * ReadMe: https://github.com/ienaga/swf2js/blob/master/README.md
  * Web: https://swf2js.wordpress.com
@@ -338,7 +338,7 @@ if (!("swf2js" in window)){(function(window)
     function startSound(audio, soundInfo)
     {
         if (soundInfo.SyncStop) {
-            audio.stop();
+            audio.pause();
         } else {
             if (soundInfo.HasLoops) {
                 audio.loopCount = soundInfo.LoopCount;
@@ -2093,36 +2093,39 @@ if (!("swf2js" in window)){(function(window)
         if (obj.type === "input") {
             var element = _document.createElement("textarea");
             if (!obj.multiline) {
-                element.wrap ="off";
+                element.onkeypress = function(e)
+                {
+                    if (e.keyCode === 13) {
+                        return false;
+                    }
+                };
             }
             element.style.position = "absolute";
             element.style.webkitBorderRadius = "0px";
-            element.style.webkitAppearance = "none";
             element.style.padding = "1px";
             element.style.margin = "0px";
-            element.style.overflow = "hidden";
+            element.style.webkitAppearance = "none";
+            element.style.resize = "none";
             element.style.border = "none";
+            element.style.overflow = "hidden";
             element.style.backgroundColor = "transparent";
             element.style.zIndex = 2147483647;
             element.style.textAlign = obj.align;
             element.value = textField.initialText;
             element.id = textField.getTagName();
-
-            var onBlur = function(stage, textField)
+            var onBlur = function(stage, textField, el)
             {
                 return function()
                 {
                     var div = _document.getElementById(stage.getName());
                     if (div) {
-                        var element = _document.getElementById(textField.getTagName());
-                        textField.setProperty("text", element.value);
+                        textField.setProperty("text", el.value);
                         textField.inputActive = false;
-                        div.removeChild(element);
+                        div.removeChild(el);
                     }
                 };
             };
-
-            element.addEventListener("blur", onBlur(stage, textField));
+            element.onblur = onBlur(stage, textField, element);
             textField.input = element;
         }
 
@@ -7303,7 +7306,9 @@ if (!("swf2js" in window)){(function(window)
         var ret;
         if (mc) {
             name = _this.checkMethod(name);
-            if (window[name]) {
+            if (name in _this.methods && mc[name]) {
+                ret = mc[name].apply(mc, params);
+            } else if (window[name]) {
                 var targetMc = mc;
                 if (params[0] instanceof MovieClip) {
                     targetMc = params.shift();
@@ -7326,8 +7331,6 @@ if (!("swf2js" in window)){(function(window)
                 }
 
                 ret = window[name].apply(window, params);
-            } else if (mc[name]) {
-                ret = mc[name].apply(mc, params);
             } else {
                 var func = mc.getVariable(name);
                 if (!func) {
@@ -7352,10 +7355,10 @@ if (!("swf2js" in window)){(function(window)
     ActionScript.prototype.ActionDefineFunction = function(stack, aScript, mc)
     {
         var as = aScript.ActionScript;
+        var name = aScript.FunctionName;
         var scope = this.scope;
         as.cache.scope = (scope) ? scope : mc;
-        var name = aScript.FunctionName;
-        if (name) {
+        if (name !== "") {
             mc.setVariable(name, as);
         } else {
             stack[stack.length] = as;
@@ -8218,6 +8221,9 @@ if (!("swf2js" in window)){(function(window)
             case "blendMode":
                 value = _this.getBlendMode();
                 break;
+            //case "SharedObject":
+            //    value = new SharedObject();
+            //    break;
             default:
                 value = _this.getVariable(name);
                 break;
@@ -8761,7 +8767,14 @@ if (!("swf2js" in window)){(function(window)
                 return window[name];
             }
             if (_this instanceof MovieClip) {
-                return _this.getMovieClip(name);
+                value = _this.getMovieClip(name);
+                if (!value) {
+                    var parent = _this.getParent();
+                    if (parent) {
+                        value = parent.getMovieClip(name);
+                    }
+                }
+                return value;
             }
         }
         return undefined;
@@ -9753,7 +9766,7 @@ if (!("swf2js" in window)){(function(window)
         obj.thickness = 0;
         obj.type = "dynamic";
         obj.wordWrap = 0;
-        obj.text = null;
+        obj.text = "";
         for (var key in obj) {
             if (!obj.hasOwnProperty(key)) {
                 continue;
@@ -9967,12 +9980,25 @@ if (!("swf2js" in window)){(function(window)
             }
 
             ctx.font = fontType + variables["size"] + "px " + variables["font"];
-            if (_this.input) {
-                var scale = stage.getScale();
+            if (_this.input !== null) {
                 var input = _this.input;
-                input.style.color = rgba(color);
+                var scale = stage.getScale();
                 var fontSize = _ceil(variables["size"]*scale*_min(matrix[0], matrix[3]));
                 input.style.font = fontType + fontSize + "px " + variables["font"];
+                input.style.color = rgba(color);
+
+                var as = variables["onChanged"];
+                if (as && !input.onchange) {
+                    var onChanged = function(as, textField, el)
+                    {
+                        return function()
+                        {
+                            textField.setProperty("text", el.value);
+                            return as(as.cache, textField.getParent(), []);
+                        };
+                    };
+                    input.onchange = onChanged(as, _this, input);
+                }
             }
 
             if (text) {
@@ -10609,259 +10635,6 @@ if (!("swf2js" in window)){(function(window)
      * @returns {undefined}
      */
     Button.prototype.getTags = function(){ return undefined; };
-
-    /**
-     * @constructor
-     */
-    var Sound = function()
-    {
-        var _this = this;
-        _this.sounds = [];
-        _this.volume = 100;
-        _this.pan = 0;
-        _this.transform = {ll:100, lr:100, rl:100,rr:100};
-        _this.isStreamin = false;
-        _this.movieClip = null;
-    };
-
-    /**
-     * @param currentTime
-     * @param loopCount
-     */
-    Sound.prototype.start = function(currentTime, loopCount)
-    {
-        var _this = this;
-        var sounds = _this.sounds;
-
-        var init = function(audio, time)
-        {
-            return function () {
-                audio.currentTime = time;
-            };
-        };
-
-        var end = function(audio, sound)
-        {
-            return function () {
-                var volume = sound.volume;
-                audio.loopCount--;
-                if (audio.loopCount > 0) {
-                    audio.volume = volume / 100;
-                    audio.currentTime = 0;
-                    audio.play();
-                }
-
-                var as = sound["onSoundComplete"];
-                if (as) {
-                    as(as.cache, sound.movieClip, [true]);
-                }
-            };
-        };
-
-        var audio;
-        for (var id in sounds) {
-            if (!sounds.hasOwnProperty(id)) {
-                continue;
-            }
-            audio = sounds[id];
-            audio.load();
-
-            if (currentTime) {
-                audio.addEventListener("canplay", init(this, currentTime));
-            }
-            if (typeof loopCount === "number" && loopCount > 0) {
-                audio.loopCount = loopCount;
-                audio.addEventListener("ended", end(audio, _this));
-            }
-
-            audio.play();
-        }
-    };
-
-    /**
-     * stop
-     */
-    Sound.prototype.stop = function(id)
-    {
-        var sounds = this.sounds;
-        var audio;
-        if (id) {
-            audio = sounds[id];
-            if (audio) {
-                audio.stop();
-            }
-        } else {
-            for (var key in sounds) {
-                if (!sounds.hasOwnProperty(key)) {
-                    continue;
-                }
-                audio = sounds[key];
-                audio.stop();
-            }
-        }
-    };
-
-    /**
-     * @param url
-     * @param bool
-     */
-    Sound.prototype.loadSound = function(url, bool)
-    {
-        var _this = this;
-        var sounds = _this.sounds;
-        var audio = _document.createElement("audio");
-
-        var onLoad = function ()
-        {
-            audio.removeEventListener("canplaythrough", onLoad);
-            audio.load();
-            audio.preload = "auto";
-            audio.autoplay = false;
-            audio.loop = false;
-            if ("onLoad" in _this) {
-                var as = _this["onLoad"];
-                if (as) {
-                    as(as.cache, _this.movieClip, [true]);
-                }
-            }
-        };
-        audio.addEventListener("canplaythrough", onLoad);
-
-        var onError = function()
-        {
-            audio.removeEventListener("error", onLoad);
-            if ("onLoad" in _this) {
-                var as = _this["onLoad"];
-                if (as) {
-                    as(as.cache, _this.movieClip, [true]);
-                }
-            }
-        };
-        audio.addEventListener('error', onError);
-
-        audio.src = url;
-        sounds[0] = audio;
-
-        _this.isStreamin = bool;
-    };
-
-    /**
-     * @param id
-     */
-    Sound.prototype.attachSound = function(id)
-    {
-        var _this = this;
-        var sounds = _this.sounds;
-        if (!(id in sounds)) {
-            var movieClip = _this.movieClip;
-            var stage = movieClip.getStage();
-            var exportAssets = stage.exportAssets;
-            if (id in exportAssets) {
-                var characterId = exportAssets[id];
-                var tag = stage.sounds[characterId];
-                if (tag) {
-                    var audio = _document.createElement("audio");
-                    audio.onload = function () {
-                        this.load();
-                        this.preload = "auto";
-                        this.autoplay = false;
-                        this.loop = false;
-                    };
-                    audio.src = tag.base64;
-                    sounds[id] = audio;
-                }
-            }
-        }
-    };
-
-    /**
-     *
-     * @returns {number}
-     */
-    Sound.prototype.getVolume = function()
-    {
-        return this.volume;
-    };
-
-    /**
-     *
-     * @param volume
-     */
-    Sound.prototype.setVolume = function(volume)
-    {
-        var _this = this;
-        var sounds = _this.sounds;
-        _this.volume = volume;
-        for (var id in sounds) {
-            if (!sounds.hasOwnProperty(id)) {
-                continue;
-            }
-            var audio = sounds[id];
-            audio.volume = volume / 100;
-        }
-    };
-
-    /**
-     * @returns {number|*}
-     */
-    Sound.prototype.getPan = function()
-    {
-        return this.pan;
-    };
-
-    /**
-     * @param pan
-     */
-    Sound.prototype.setPan = function(pan)
-    {
-        this.pan = pan;
-    };
-
-    /**
-     * @param object
-     */
-    Sound.prototype.setTransform = function(object)
-    {
-        var transform = this.transform;
-        for (var name in object) {
-            if (!object.hasOwnProperty(name)) {
-                continue;
-            }
-            switch (name) {
-                case "ll":
-                case "lr":
-                case "rl":
-                case "rr":
-                    transform[name] = object[name];
-                    break;
-            }
-        }
-    };
-
-    /**
-     * @returns {{ll: number, lr: number, rl: number, rr: number}|*}
-     */
-    Sound.prototype.getTransform = function()
-    {
-        return this.transform;
-    };
-
-    /**
-     * @returns {number}
-     */
-    Sound.prototype.getBytesLoaded = function()
-    {
-        return 1;
-    };
-
-    /**
-     * @returns {number}
-     */
-    Sound.prototype.getBytesTotal = function()
-    {
-        return 1;
-    };
-
 
     /**
      * @constructor
@@ -11669,15 +11442,10 @@ if (!("swf2js" in window)){(function(window)
             var tag = stage.getCharacter(characterId);
             if (tag) {
                 var swfTag = new SwfTag(stage, null);
-                var parent = _this.getParent();
-                if (!parent) {
-                    parent = stage.getParent();
-                }
-
                 movieClip = new MovieClip();
                 movieClip.stage = stage;
                 movieClip.setCharacterId(characterId);
-                movieClip.setParent(parent);
+                movieClip.setParent(_this);
                 movieClip.setLevel(depth);
                 movieClip.setName(name);
                 movieClip.setTarget(_this.getTarget()+"/"+name);
@@ -11691,10 +11459,13 @@ if (!("swf2js" in window)){(function(window)
                     matrix: _cloneArray([1,0,0,1,0,0])
                 };
 
-                var totalFrame = parent.getTotalFrames() + 1;
-                var addTags = parent.addTags;
-                var controller = parent.controller;
-                for (var frame = 1; frame < totalFrame; frame++) {
+                var totalFrame = _this.getTotalFrames() + 1;
+                var addTags = _this.addTags;
+                var controller = _this.controller;
+
+
+                var currentFrame = 1;
+                for (var frame = currentFrame; frame < totalFrame; frame++) {
                     if (!(frame in addTags)) {
                         addTags[frame] = [];
                     }
@@ -11714,12 +11485,12 @@ if (!("swf2js" in window)){(function(window)
                     }
                 }
 
-                var cTag = controller[1][depth];
-                var _controller = parent._controller;
-                if (!(1 in _controller)) {
-                    _controller[1] = [];
+                var cTag = controller[currentFrame][depth];
+                var _controller = _this._controller;
+                if (!(currentFrame in _controller)) {
+                    _controller[currentFrame] = [];
                 }
-                _controller[1][depth] = {
+                _controller[currentFrame][depth] = {
                     instanceId: movieClip.instanceId,
                     _colorTransform: _cloneArray(cTag.colorTransform),
                     _matrix: _cloneArray(cTag.matrix)
@@ -13218,8 +12989,8 @@ if (!("swf2js" in window)){(function(window)
     {
         var _this = this;
         var xmlHttpRequest = _this.xmlHttpRequest;
-        xmlHttpRequest.open(sendMethod, url);
         var sendMethod = method ? method.toUpperCase() : "GET";
+        xmlHttpRequest.open(sendMethod, url);
         if (sendMethod === "POST") {
             xmlHttpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         }
@@ -13386,6 +13157,258 @@ if (!("swf2js" in window)){(function(window)
     /**
      * @constructor
      */
+    var Sound = function()
+    {
+        var _this = this;
+        _this.sounds = [];
+        _this.volume = 100;
+        _this.pan = 0;
+        _this.transform = {ll:100, lr:100, rl:100,rr:100};
+        _this.isStreamin = false;
+        _this.movieClip = null;
+    };
+
+    /**
+     * @param currentTime
+     * @param loopCount
+     */
+    Sound.prototype.start = function(currentTime, loopCount)
+    {
+        var _this = this;
+        var sounds = _this.sounds;
+
+        var init = function(audio, time)
+        {
+            return function () {
+                audio.currentTime = time;
+            };
+        };
+
+        var end = function(audio, sound)
+        {
+            return function () {
+                var volume = sound.volume;
+                audio.loopCount--;
+                if (audio.loopCount > 0) {
+                    audio.volume = volume / 100;
+                    audio.currentTime = 0;
+                    audio.play();
+                }
+
+                var as = sound["onSoundComplete"];
+                if (as) {
+                    as(as.cache, sound.movieClip, [true]);
+                }
+            };
+        };
+
+        var audio;
+        for (var id in sounds) {
+            if (!sounds.hasOwnProperty(id)) {
+                continue;
+            }
+            audio = sounds[id];
+            audio.load();
+
+            if (currentTime) {
+                audio.addEventListener("canplay", init(audio, currentTime));
+            }
+            if (typeof loopCount === "number" && loopCount > 0) {
+                audio.loopCount = loopCount;
+                audio.addEventListener("ended", end(audio, _this));
+            }
+
+            audio.play();
+        }
+    };
+
+    /**
+     * stop
+     */
+    Sound.prototype.stop = function(id)
+    {
+        var sounds = this.sounds;
+        var audio;
+        if (id) {
+            audio = sounds[id];
+            if (audio) {
+                audio.pause();
+            }
+        } else {
+            for (var key in sounds) {
+                if (!sounds.hasOwnProperty(key)) {
+                    continue;
+                }
+                audio = sounds[key];
+                audio.pause();
+            }
+        }
+    };
+
+    /**
+     * @param url
+     * @param bool
+     */
+    Sound.prototype.loadSound = function(url, bool)
+    {
+        var _this = this;
+        var sounds = _this.sounds;
+        var audio = _document.createElement("audio");
+
+        var onLoad = function ()
+        {
+            audio.removeEventListener("canplaythrough", onLoad);
+            audio.load();
+            audio.preload = "auto";
+            audio.autoplay = false;
+            audio.loop = false;
+            if ("onLoad" in _this) {
+                var as = _this["onLoad"];
+                if (as) {
+                    as(as.cache, _this.movieClip, [true]);
+                }
+            }
+        };
+        audio.addEventListener("canplaythrough", onLoad);
+
+        var onError = function()
+        {
+            audio.removeEventListener("error", onLoad);
+            if ("onLoad" in _this) {
+                var as = _this["onLoad"];
+                if (as) {
+                    as(as.cache, _this.movieClip, [true]);
+                }
+            }
+        };
+        audio.addEventListener('error', onError);
+
+        audio.src = url;
+        sounds[0] = audio;
+
+        _this.isStreamin = bool;
+    };
+
+    /**
+     * @param id
+     */
+    Sound.prototype.attachSound = function(id)
+    {
+        var _this = this;
+        var sounds = _this.sounds;
+        if (!(id in sounds)) {
+            var movieClip = _this.movieClip;
+            var stage = movieClip.getStage();
+            var exportAssets = stage.exportAssets;
+            if (id in exportAssets) {
+                var characterId = exportAssets[id];
+                var tag = stage.sounds[characterId];
+                if (tag) {
+                    var audio = _document.createElement("audio");
+                    audio.onload = function () {
+                        this.load();
+                        this.preload = "auto";
+                        this.autoplay = false;
+                        this.loop = false;
+                    };
+                    audio.src = tag.base64;
+                    sounds[id] = audio;
+                }
+            }
+        }
+    };
+
+    /**
+     *
+     * @returns {number}
+     */
+    Sound.prototype.getVolume = function()
+    {
+        return this.volume;
+    };
+
+    /**
+     *
+     * @param volume
+     */
+    Sound.prototype.setVolume = function(volume)
+    {
+        var _this = this;
+        var sounds = _this.sounds;
+        _this.volume = volume;
+        for (var id in sounds) {
+            if (!sounds.hasOwnProperty(id)) {
+                continue;
+            }
+            var audio = sounds[id];
+            audio.volume = volume / 100;
+        }
+    };
+
+    /**
+     * @returns {number|*}
+     */
+    Sound.prototype.getPan = function()
+    {
+        return this.pan;
+    };
+
+    /**
+     * @param pan
+     */
+    Sound.prototype.setPan = function(pan)
+    {
+        this.pan = pan;
+    };
+
+    /**
+     * @param object
+     */
+    Sound.prototype.setTransform = function(object)
+    {
+        var transform = this.transform;
+        for (var name in object) {
+            if (!object.hasOwnProperty(name)) {
+                continue;
+            }
+            switch (name) {
+                case "ll":
+                case "lr":
+                case "rl":
+                case "rr":
+                    transform[name] = object[name];
+                    break;
+            }
+        }
+    };
+
+    /**
+     * @returns {{ll: number, lr: number, rl: number, rr: number}|*}
+     */
+    Sound.prototype.getTransform = function()
+    {
+        return this.transform;
+    };
+
+    /**
+     * @returns {number}
+     */
+    Sound.prototype.getBytesLoaded = function()
+    {
+        return 1;
+    };
+
+    /**
+     * @returns {number}
+     */
+    Sound.prototype.getBytesTotal = function()
+    {
+        return 1;
+    };
+
+    /**
+     * @constructor
+     */
     var Key = function(){};
 
     /**
@@ -13402,6 +13425,9 @@ if (!("swf2js" in window)){(function(window)
      */
     Key.prototype.getCode = function()
     {
+        if (isTouch) {
+            return 13;
+        }
         var keyCode = (_event) ? _event.keyCode : null;
         if (96 <= keyCode && keyCode <= 105) {
             var n = keyCode - 96;
@@ -14751,6 +14777,13 @@ if (!("swf2js" in window)){(function(window)
         _this.isHit = false;
         _this.touchEndAction = null;
         var parent;
+        var focus = function(e)
+        {
+            return function()
+            {
+                e.focus();
+            };
+        };
         for (var i = len; i--;) {
             if (!(i in buttonHits)) {
                 continue;
@@ -14783,10 +14816,10 @@ if (!("swf2js" in window)){(function(window)
                                 parent = mc.getParent();
                                 text = parent.getProperty(variable);
                                 if (text === undefined) {
-                                    text = mc.getProperty("text");
+                                    text = mc.getVariable("text");
                                 }
                             }
-                            if (text) {
+                            if (text !== undefined) {
                                 element.value = text;
                             }
 
@@ -14801,17 +14834,17 @@ if (!("swf2js" in window)){(function(window)
                                 element.style.backgroundColor = rgba(backgroundColor);
                             }
 
-                            var left = hitObj.xMin + x;
-                            var top = hitObj.yMin + y;
-                            var width =hitObj.xMax - left;
+                            var left = hitObj.xMin;
+                            var top = hitObj.yMin;
+                            var width = hitObj.xMax - left;
                             var height = hitObj.yMax - top;
-                            element.style.left = _ceil(left * scale) - 2 + "px";
-                            element.style.top = _ceil(top * scale) - 2 + "px";
+                            element.style.left = _ceil(left * scale) - 3 + "px";
+                            element.style.top = _ceil(top * scale) - 3 + "px";
                             element.style.width = _ceil(width * scale) + 6 + "px";
                             element.style.height = _ceil(height * scale) + 6 + "px";
 
                             div.appendChild(element);
-                            _setTimeout(element.focus, 0);
+                            _setTimeout(focus(element), 0);
                         }
                     } else {
                         var clipEvent = mc.clipEvent;
@@ -14870,12 +14903,14 @@ if (!("swf2js" in window)){(function(window)
                     }
 
                     var keyPress = cond.CondKeyPress;
-                    if (keyPress === 0 || keyPress === 13 || (keyPress >= 48 && keyPress <= 57)) {
+                    if (keyPress === 0 ||
+                        keyPress === 13 ||
+                        (keyPress >= 48 && keyPress <= 57) ||
+                        cond.CondOverUpToOverDown
+                    ) {
                         _this.touchObj.ActionScript = cond.ActionScript;
-                        if (cond.CondOverUpToOverDown || (isTouch && keyPress)) {
-                            var as = cond.ActionScript;
-                            _this.buttonAction(mc, as);
-                        }
+                        var as = cond.ActionScript;
+                        _this.buttonAction(mc, as);
                     }
                 }
 
