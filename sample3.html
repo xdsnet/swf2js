@@ -18,36 +18,35 @@
     mc1.loadMovie("sample/model.swf");
 
     // 後はよしなに
-    mc1.setProperty("_x", 120);
-    mc1.setProperty("_y", 30);
-    mc1.setProperty("_xscale", 50);
-    mc1.setProperty("_yscale", 50);
+    mc1._x = 120;
+    mc1._y = 30;
+    mc1._xscale = 50;
+    mc1._yscale = 50;
 
 
     var x = 10;
     // オリジナルのアクションはイベントとして追加
     var onEnterFrame = function()
     {
-        this.setProperty('_x', x++);
-        var width = this.getProperty('_width');
-        if (x > 240)
-            x = -width;
+        this._x++;
+        var width = this._width;
+        if (this._x > 240)
+            this._x = -width;
     };
 
-    mc1.addEvent("onEnterFrame", onEnterFrame);
-    mc1.onClipEvent('press', function()
+    mc1.addEventListener("onEnterFrame", onEnterFrame);
+    mc1.addEventListener('press', function()
     {
-        this.delEvent("onEnterFrame");
+        this.removeEventListener("onEnterFrame");
         this.startDrag(false);
-        this.setProperty('_alpha', 50);
+        this._alpha = 50;
     });
 
-    mc1.onClipEvent('release', function()
+    mc1.addEventListener('release', function()
     {
         this.stopDrag();
-        x = this.getProperty('_x');
-        this.setProperty('_alpha', 100);
-        this.addEvent("onEnterFrame", onEnterFrame);
+        this._alpha = 100;
+        this.addEventListener("onEnterFrame", onEnterFrame);
     });
 
     var _root2 = swf2js.createRootMovieClip(240, 240, 12, {tagId: "test"});
