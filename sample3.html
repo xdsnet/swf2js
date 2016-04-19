@@ -18,11 +18,13 @@
     mc1.loadMovie("sample/model.swf");
 
     // 後はよしなに
-    mc1._x = 120;
-    mc1._y = 30;
-    mc1._xscale = 50;
-    mc1._yscale = 50;
-
+    mc1.addEventListener("data", function()
+    {
+        this._x = 120;
+        this._y = 30;
+        this._xscale = 50;
+        this._yscale = 50;
+    });
 
     var x = 10;
     // オリジナルのアクションはイベントとして追加
@@ -52,6 +54,7 @@
     var _root2 = swf2js.createRootMovieClip(240, 240, 12, {tagId: "test"});
     var mc2 = _root2.createEmptyMovieClip('MC2', 1);
     mc2.loadMovie("sample/mogura.swf");
+
 </script>
 
 <div id="test" style="width: 240px; height: 240px;"></div>
