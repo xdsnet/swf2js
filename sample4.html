@@ -17,7 +17,7 @@
     // ***********************
 
     // 空のMovieClipを作成                 (MovieClip名, depth)
-    var model = _root.createEmptyMovieClip("model", 10);
+    var model = _root.createMovieClip("model", 10);
 
     // 外部swfを読み込み
     model.loadMovie("./sample/model.swf");
@@ -58,7 +58,7 @@
     // ***********************
 
     // 空のMovieClipを作成
-    var shapes = _root.createEmptyMovieClip("shapes", 1);
+    var shapes = _root.createMovieClip("shapes", 1);
 
     /**
      * ランダム座標値
@@ -73,7 +73,7 @@
     shapes.addEventListener("enterFrame", function()
     {
         // Shapeを作成
-        var shape = new swf2js.Shape();
+        var shape = this.createShape();
 
         var hue = 360 * Math.random();
         var color = "hsl(" + hue + ", 100%, 50%)";
@@ -106,9 +106,6 @@
                 this.y = (mouseY) ? mouseY + 100 * (Math.random() - 0.5) : random();
             }
         });
-
-        // Shapeを追加
-        this.addChild(shape);
     });
 
 </script>
