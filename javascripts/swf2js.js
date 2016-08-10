@@ -1,6 +1,6 @@
 /*jshint bitwise: false*/
 /**
- * swf2js (version 0.6.20)
+ * swf2js (version 0.6.21)
  * Develop: https://github.com/ienaga/swf2js
  * ReadMe: https://github.com/ienaga/swf2js/blob/master/README.md
  * Web: https://swf2js.wordpress.com
@@ -21544,7 +21544,7 @@ if (!("swf2js" in window)){(function(window)
         _this.isTouchEvent = false;
         _this.isLoad = false;
         _this.jpegTables = null;
-        _this.backgroundColor = "rgb(255,255,255)";
+        _this.backgroundColor = "transparent";
         _this.version = 8;
         _this.loadStatus = 0;
         _this.isClipDepth = false;
@@ -22431,7 +22431,7 @@ if (!("swf2js" in window)){(function(window)
         ctx.globalCompositeOperation = "source-over";
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         var backgroundColor = _this.getBackgroundColor();
-        if (!backgroundColor) {
+        if (!backgroundColor || backgroundColor === "transparent") {
             // pre clear
             var canvas = ctx.canvas;
             ctx.clearRect(0, 0, canvas.width + 1, canvas.height + 1);
@@ -22608,7 +22608,7 @@ if (!("swf2js" in window)){(function(window)
         style = div.style;
         style.position = "relative";
         style.top = "0";
-        style.backgroundColor = "#000000";
+        style.backgroundColor = "transparent";
         style.overflow = "hidden";
         style["-webkit-backface-visibility"] = "hidden";
 
