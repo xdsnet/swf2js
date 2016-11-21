@@ -1,3 +1,6 @@
+本项目引用自ienaga的swf2js，提供利用javascript控制html5播放flash动画（交互动画）能力，支持iPhone、Android等等。不过暂不支持二次加载资源。
+
+
 JavaScript製FlashPlayer「swf2js」Flash(swf)をHTML5に変換してiPhone、Androidで再生可能に!
 ======
 
